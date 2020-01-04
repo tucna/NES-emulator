@@ -2,6 +2,8 @@
 
 #include "engine/tPixelGameEngine.h"
 
+#include "imgui/imgui.h"
+
 class NES;
 
 class Visualizer : public tDX::PixelGameEngine
@@ -17,4 +19,7 @@ public:
 
 private:
   NES* m_nes;
+
+  ImVec4 m_redColor;
+  ImVec4 m_greenColor;
 };

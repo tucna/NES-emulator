@@ -9,13 +9,14 @@
 
 
 Visualizer::Visualizer(NES* nes) :
-  m_nes(nes)
+  m_nes(nes),
+  m_redColor(1,0,0,1),
+  m_greenColor(0,1,0,1)
 {
   sAppName = "NES_Emulator";
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  //ImGuiIO& io = ImGui::GetIO();
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -43,32 +44,37 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
 
 bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
 {
+  auto print = [&](bool flag)
+  {
+    flag ? ImGui::TextColored(m_greenColor, "Yes") : ImGui::TextColored(m_redColor, "No");
+  };
+
+  const Cpu& cpu = m_nes->GetCpu();
+
   // Start the Dear ImGui frame
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
 
-  //ImGui::ShowDemoWindow();
-
-  /*
-  C = (1 << 0),	// Carry Bit
-    Z = (1 << 1),	// Zero
-    I = (1 << 2),	// Disable Interrupts
-    D = (1 << 3),	// Decimal Mode (unused in this implementation)
-    B = (1 << 4),	// Break
-    U = (1 << 5),	// Unused
-    V = (1 << 6),	// Overflow
-    N = (1 << 7),	// Negative
-    */
-
   ImGui::Begin("CPU information");
-  ImGui::Text("Carry bit"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
-  ImGui::Text("Zero"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
-  ImGui::Text("Disable Interrupts"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
-  ImGui::Text("Decimal Mode"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
-  ImGui::Text("Break"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
-  ImGui::Text("UNUSED");
-  ImGui::Text("Negative"); ImGui::SameLine(); ImGui::TextColored(ImVec4(1, 0, 0, 1), "No");
+  ImGui::Text("Bits");
+  ImGui::Text("0 : Carry bit"); ImGui::SameLine(); print(cpu.GetB0());
+  ImGui::Text("1 : Zero"); ImGui::SameLine(); print(cpu.GetB1());
+  ImGui::Text("2 : Disable Interrupts"); ImGui::SameLine(); print(cpu.GetB2());
+  ImGui::Text("3 : Decimal Mode"); ImGui::SameLine(); print(cpu.GetB3());
+  ImGui::Text("4 : Break"); ImGui::SameLine(); print(cpu.GetB4());
+  ImGui::Text("5 : UNUSED");
+  ImGui::Text("6 : Overflow"); ImGui::SameLine(); print(cpu.GetB6());
+  ImGui::Text("7 : Negative"); ImGui::SameLine(); print(cpu.GetB7());
+  ImGui::Separator();
+  ImGui::Columns(2);
+  ImGui::SetColumnWidth(0, 120);
+  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+
   ImGui::End();
 
   ImGui::Render();

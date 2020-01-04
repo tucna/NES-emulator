@@ -1,101 +1,92 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Hardware">
+      <UniqueIdentifier>{8ce547fe-c3c2-473d-81c2-7ff35cb83cf6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{815066dd-8137-4f6c-a7a7-3368f585361a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{c28a9f75-269d-4993-a76c-b85d3f797d3e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="sources\Cpu.cpp">
+      <Filter>Hardware</Filter>
     </ClCompile>
     <ClCompile Include="sources\Bus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sources\Cpu.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Hardware</Filter>
     </ClCompile>
     <ClCompile Include="sources\NES.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sources\Visualizer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Hardware</Filter>
     </ClCompile>
     <ClCompile Include="sources\imgui\imgui.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="sources\imgui\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="sources\imgui\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="sources\imgui\imgui_impl_dx11.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sources\imgui\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="sources\imgui\imgui_impl_win32.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="sources\imgui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Main.cpp" />
+    <ClCompile Include="sources\Visualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="sources\engine\vs.cso">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="sources\engine\ps.cso">
-      <Filter>Resource Files</Filter>
+      <Filter>Engine</Filter>
+    </None>
+    <None Include="sources\engine\vs.cso">
+      <Filter>Engine</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sources\Bus.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\Cpu.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\NES.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\Visualizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\engine\tPixelGameEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sources\imgui\imconfig.h">
-      <Filter>Header Files</Filter>
+      <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="sources\imgui\imgui.h">
-      <Filter>Header Files</Filter>
+      <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="sources\imgui\imgui_impl_dx11.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\imgui\imgui_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\imgui\imstb_rectpack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\imgui\imstb_textedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sources\imgui\imstb_truetype.h">
-      <Filter>Header Files</Filter>
+      <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="sources\imgui\imgui_impl_win32.h">
-      <Filter>Header Files</Filter>
+      <Filter>ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="sources\imgui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\imgui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\imgui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\imgui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Bus.h">
+      <Filter>Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Cpu.h">
+      <Filter>Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\NES.h">
+      <Filter>Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\engine\tPixelGameEngine.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Visualizer.h" />
   </ItemGroup>
 </Project>
