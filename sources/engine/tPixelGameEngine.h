@@ -97,6 +97,8 @@ namespace _gfs = std::experimental::filesystem::v1;
 #undef max
 #define UNUSED(x) (void)(x)
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace tDX // tucna - DirectX
 {
   struct Pixel
@@ -2136,6 +2138,11 @@ namespace tDX
   LRESULT CALLBACK PixelGameEngine::tDX_WindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     static PixelGameEngine *sge;
+
+    // If event is consumed by user then quit
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+      return true;
+
     switch (uMsg)
     {
     case WM_CREATE:		sge = (PixelGameEngine*)((LPCREATESTRUCT)lParam)->lpCreateParams;	return 0;

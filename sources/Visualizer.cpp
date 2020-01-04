@@ -7,6 +7,7 @@
 #include "NES.h"
 #include "Visualizer.h"
 
+
 Visualizer::Visualizer(NES* nes) :
   m_nes(nes)
 {
@@ -34,6 +35,9 @@ bool Visualizer::OnUserCreate()
 
 bool Visualizer::OnUserUpdate(float fElapsedTime)
 {
+  DrawString(6, 6, "TUCNA", tDX::WHITE);
+  DrawString(5, 5, "TUCNA", tDX::RED);
+
   return true;
 }
 
