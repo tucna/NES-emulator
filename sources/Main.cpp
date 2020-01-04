@@ -1,32 +1,15 @@
 #define T_PGE_APPLICATION
 #include "../engine/tPixelGameEngine.h"
 
-class NESEmulator : public tDX::PixelGameEngine
-{
-public:
-  NESEmulator()
-  {
-    sAppName = "NES_Emulator";
-  }
+#include "NES.h"
+#include "Visualizer.h"
 
-  bool OnUserCreate() override
-  {
-    return true;
-  }
-
-  bool OnUserUpdate(float fElapsedTime) override
-  {
-    return true;
-  }
-
-private:
-};
+using namespace std;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-  NESEmulator nes;
-  if (nes.Construct(400, 300, 2, 2))
-    nes.Start();
+  unique_ptr<NES> nes = make_unique<NES>();
+  unique_ptr<Visualizer> visualizer = make_unique<Visualizer>(nes.get());
 
   return 0;
 }
