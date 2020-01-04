@@ -125,18 +125,32 @@
   <ItemGroup>
     <ClCompile Include="sources\Bus.cpp" />
     <ClCompile Include="sources\Cpu.cpp" />
+    <ClCompile Include="sources\imgui\imgui.cpp" />
+    <ClCompile Include="sources\imgui\imgui_demo.cpp" />
+    <ClCompile Include="sources\imgui\imgui_draw.cpp" />
+    <ClCompile Include="sources\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="sources\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="sources\imgui\imgui_widgets.cpp" />
     <ClCompile Include="sources\NES.cpp" />
     <ClCompile Include="sources\Main.cpp" />
     <ClCompile Include="sources\Visualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="engine\ps.cso" />
-    <None Include="engine\vs.cso" />
+    <None Include="sources\engine\ps.cso" />
+    <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sources\Bus.h" />
     <ClInclude Include="sources\Cpu.h" />
-    <ClInclude Include="engine\tPixelGameEngine.h" />
+    <ClInclude Include="sources\engine\tPixelGameEngine.h" />
+    <ClInclude Include="sources\imgui\imconfig.h" />
+    <ClInclude Include="sources\imgui\imgui.h" />
+    <ClInclude Include="sources\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="sources\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="sources\imgui\imgui_internal.h" />
+    <ClInclude Include="sources\imgui\imstb_rectpack.h" />
+    <ClInclude Include="sources\imgui\imstb_textedit.h" />
+    <ClInclude Include="sources\imgui\imstb_truetype.h" />
     <ClInclude Include="sources\NES.h" />
     <ClInclude Include="sources\Visualizer.h" />
   </ItemGroup>

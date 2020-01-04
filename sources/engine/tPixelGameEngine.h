@@ -291,6 +291,8 @@ namespace tDX // tucna - DirectX
     virtual bool OnUserCreate();
     // Called every frame, and provides you with a time per frame value
     virtual bool OnUserUpdate(float fElapsedTime);
+    // Called every frame, just before Present
+    virtual bool OnUserUpdateEndFrame(float fElapsedTime);
     // Called once on application termination, so you can be a clean coder
     virtual bool OnUserDestroy();
 
@@ -375,6 +377,11 @@ namespace tDX // tucna - DirectX
     void Clear(Pixel p);
     // Resize the primary screen sprite
     void SetScreenSize(int w, int h);
+
+    // General getters to use with ImGUI
+    HWND GetHWND() { return tDX_hWnd; }
+    ID3D11Device* GetDevice() { return m_d3dDevice.Get(); }
+    ID3D11DeviceContext* GetContext() { return m_d3dContext.Get(); }
 
   public: // Branding
     std::string sAppName;
@@ -954,7 +961,7 @@ namespace tDX
     // VS setup
     {
       Microsoft::WRL::ComPtr<ID3DBlob> blob;
-      D3DReadFileToBlob(L"engine/vs.cso", &blob);
+      D3DReadFileToBlob(L"sources/engine/vs.cso", &blob);
 
       m_d3dDevice->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_vertexShader.GetAddressOf());
 
@@ -971,7 +978,7 @@ namespace tDX
     // PS setup
     {
       Microsoft::WRL::ComPtr<ID3DBlob> blob;
-      D3DReadFileToBlob(L"engine/ps.cso", &blob);
+      D3DReadFileToBlob(L"sources/engine/ps.cso", &blob);
 
       m_d3dDevice->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, m_pixelShader.GetAddressOf());
       m_d3dContext->PSSetShader(m_pixelShader.Get(), NULL, 0);
@@ -1140,6 +1147,10 @@ namespace tDX
         m_d3dContext->UpdateSubresource(m_texture.Get(), 0, NULL, pDefaultDrawTarget->GetData(), pDefaultDrawTarget->width * 4, 0);
 
         m_d3dContext->DrawIndexed(6, 0, 0);
+
+        if (!OnUserUpdateEndFrame(fElapsedTime))
+          bActive = false;
+
         m_swapChain->Present(0, 0);
 
         // Update Title Bar
@@ -1786,6 +1797,10 @@ namespace tDX
   bool PixelGameEngine::OnUserUpdate(float fElapsedTime)
   {
     UNUSED(fElapsedTime);  return false;
+  }
+  bool PixelGameEngine::OnUserUpdateEndFrame(float fElapsedTime)
+  {
+    UNUSED(fElapsedTime); return false;
   }
   bool PixelGameEngine::OnUserDestroy()
   {

@@ -1,5 +1,5 @@
 #define T_PGE_APPLICATION
-#include "../engine/tPixelGameEngine.h"
+#include "engine/tPixelGameEngine.h"
 
 #include "NES.h"
 #include "Visualizer.h"
