@@ -1,12 +1,23 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+
+class Bus;
 
 // NES uses 6502
 class Cpu
 {
 public:
-  Cpu();
+  struct Instruction
+  {
+    std::string name;
+    uint8_t(Cpu::*operate)(void);
+    uint8_t(Cpu::*addrmode)(void);
+    uint8_t cycles;
+  };
+
+  Cpu(Bus* bus);
   ~Cpu() {}
 
   bool GetB0() const { return m_status & Flags::C; }
@@ -31,7 +42,32 @@ private:
     N = (1 << 7),	// Negative
   };
 
+  // Addressing modes
+  uint8_t IMP();	uint8_t IMM();
+  uint8_t ZP0();	uint8_t ZPX();
+  uint8_t ZPY();	uint8_t REL();
+  uint8_t ABS();	uint8_t ABX();
+  uint8_t ABY();	uint8_t IND();
+  uint8_t IZX();	uint8_t IZY();
+
+  void Write(uint16_t addr, uint8_t data);
+  uint8_t Read(uint16_t addr);
+
+  // Registers
+  uint8_t m_a;
+  uint8_t m_x;
+  uint8_t m_y;
+  uint8_t m_stackPointer;
+  uint16_t m_programCounter;
+
   // Capture internal CPU status
   uint8_t m_status;
+
+  uint8_t m_fetched;
+  uint16_t m_addrAbs;
+  uint16_t m_addrRel;
+
+  // Bus which the CPU is connected to
+  Bus* m_bus;
 };
 
