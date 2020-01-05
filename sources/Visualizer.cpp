@@ -12,7 +12,8 @@ using namespace std;
 Visualizer::Visualizer(NES* nes) :
   m_nes(nes),
   m_redColor(1,0,0,1),
-  m_greenColor(0,1,0,1)
+  m_greenColor(0,1,0,1),
+  m_darkGrayColor(0.6f, 0.6f, 0.6f, 1)
 {
   sAppName = "NES_Emulator";
 
@@ -70,20 +71,24 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Separator();
   ImGui::Columns(2);
   ImGui::SetColumnWidth(0, 120);
-  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
-  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
-  ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
-  ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
-  ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
+  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
+  ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
+  ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
+  ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
   ImGui::End();
 
   PrepareDisassembledCode(5);
+  auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
 
   ImGui::Begin("Disassembly");
-  ImGui::Text("Program counter"); ImGui::SameLine(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000");
+  for (auto it = m_disassembledCode.begin(); it < middleDis; it++)
+    ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::Separator();
-  for (const string& str : m_disassembledCode)
-    ImGui::Text(str.data());
+  ImGui::Text((*middleDis++).data());
+  ImGui::Separator();
+  for (auto it = middleDis; it < m_disassembledCode.end(); it++)
+    ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
 
   ImGui::Render();
@@ -104,6 +109,22 @@ bool Visualizer::OnUserDestroy()
 void Visualizer::PrepareDisassembledCode(uint8_t lines)
 {
   m_disassembledCode .clear();
-  m_disassembledCode.push_back("$0000: Hello");
-  m_disassembledCode.push_back("$0001: here");
+
+  const Cpu& cpu = m_nes->GetCpu();
+  const std::map<uint16_t, std::string>& assembly = m_nes->GetAssembly();
+
+  auto it = assembly.find(cpu.GetProgramCounter());
+
+  advance(it, -lines);
+
+  if (it != assembly.end())
+  {
+    m_disassembledCode.push_back((*it).second);
+
+    for (int i = 0; i < lines * 2; i++)
+    {
+      if (++it != assembly.end())
+        m_disassembledCode.push_back((*it).second);
+    }
+  }
 }

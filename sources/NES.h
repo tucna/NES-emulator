@@ -15,6 +15,8 @@ public:
   const Bus& GetBus() { return *m_bus; }
   const Cpu& GetCpu() { return *m_cpu; }
 
+  const std::map<uint16_t, std::string>& GetAssembly() { return m_asm; }
+
 private:
   void InitExample();
 

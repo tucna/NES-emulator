@@ -36,6 +36,8 @@ public:
   bool GetB6() const { return m_status & Flags::V; }
   bool GetB7() const { return m_status & Flags::N; }
 
+  uint16_t GetProgramCounter() const { return m_programCounter; }
+
 private:
   enum Flags
   {

@@ -24,6 +24,7 @@ private:
 
   ImVec4 m_redColor;
   ImVec4 m_greenColor;
+  ImVec4 m_darkGrayColor;
 
   std::vector<std::string> m_disassembledCode;
 };

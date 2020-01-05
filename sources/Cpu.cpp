@@ -106,78 +106,78 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     // Read instruction, and get its readable name
     uint8_t opcode = m_bus->Read(addr, true);
     addr++; // TODO: could be above
-    sInst += m_lookup[m_opcode].name + " ";
+    sInst += m_lookup[opcode].name + " ";
 
     // Get oprands from desired locations, and form the
     // instruction based upon its addressing mode. These
     // routines mimmick the actual fetch routine of the
     // 6502 in order to get accurate data as part of the
     // instruction
-    if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+    if (m_lookup[opcode].addrmode == &Cpu::IMP)
     {
       sInst += " {IMP}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::IMM)
+    else if (m_lookup[opcode].addrmode == &Cpu::IMM)
     {
       value = m_bus->Read(addr, true); addr++;
       sInst += "#$" + hex(value, 2) + " {IMM}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ZP0)
+    else if (m_lookup[opcode].addrmode == &Cpu::ZP0)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + " {ZP0}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ZPX)
+    else if (m_lookup[opcode].addrmode == &Cpu::ZPX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", X {ZPX}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ZPY)
+    else if (m_lookup[opcode].addrmode == &Cpu::ZPY)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::IZX)
+    else if (m_lookup[opcode].addrmode == &Cpu::IZX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + ", X) {IZX}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::IZY)
+    else if (m_lookup[opcode].addrmode == &Cpu::IZY)
     {
       lo = m_bus->Read(addr, true);
       addr++; // TODO: addr can be above everywhere
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + "), Y {IZY}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ABS)
+    else if (m_lookup[opcode].addrmode == &Cpu::ABS)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ABX)
+    else if (m_lookup[opcode].addrmode == &Cpu::ABX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::ABY)
+    else if (m_lookup[opcode].addrmode == &Cpu::ABY)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::IND)
+    else if (m_lookup[opcode].addrmode == &Cpu::IND)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
     }
-    else if (m_lookup[m_opcode].addrmode == &Cpu::REL)
+    else if (m_lookup[opcode].addrmode == &Cpu::REL)
     {
       value = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex(value, 2) + " [$" + hex(addr + value, 4) + "] {REL}";
