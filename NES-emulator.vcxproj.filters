@@ -53,6 +53,9 @@
     <ClCompile Include="sources\Mapper_000.cpp">
       <Filter>Hardware\Cartridge</Filter>
     </ClCompile>
+    <ClCompile Include="sources\Ppu.cpp">
+      <Filter>Hardware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="sources\engine\ps.cso">
@@ -108,6 +111,9 @@
     </ClInclude>
     <ClInclude Include="sources\Mapper_000.h">
       <Filter>Hardware\Cartridge</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Ppu.h">
+      <Filter>Hardware</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

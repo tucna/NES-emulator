@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="sources\Ppu.cpp" />
     <ClCompile Include="sources\Mapper_000.cpp" />
     <ClCompile Include="sources\Mapper.cpp" />
     <ClCompile Include="sources\Cartridge.cpp" />
@@ -143,6 +144,7 @@
     <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sources\Ppu.h" />
     <ClInclude Include="sources\Mapper_000.h" />
     <ClInclude Include="sources\Mapper.h" />
     <ClInclude Include="sources\Cartridge.h" />

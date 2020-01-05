@@ -8,10 +8,11 @@ NES::NES()
 {
   m_bus = make_unique<Bus>();
   m_cpu = make_unique<Cpu>(m_bus.get());
+  m_ppu = make_unique<Ppu>();
 
   // TODO: some switch here?
   //InitExample();
-  InitCartridge("roms/nestest.nes");
+  InsertCartridge("roms/nestest.nes");
 }
 
 void NES::InitExample()
@@ -62,7 +63,7 @@ void NES::InitExample()
   m_cpu->Reset();
 }
 
-void NES::InitCartridge(const std::string& file)
+void NES::InsertCartridge(const std::string& file)
 {
   // Load the cartridge
   m_cartridge = std::make_unique<Cartridge>(file);

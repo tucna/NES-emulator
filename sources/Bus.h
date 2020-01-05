@@ -2,7 +2,9 @@
 
 #include <array>
 
+#include "Cartridge.h"
 #include "Cpu.h"
+#include "Ppu.h"
 
 class Bus
 {
@@ -22,5 +24,7 @@ private:
   std::array<uint8_t, 64 * 1024> m_ram;
 
   Cpu* m_cpu;
+  Ppu* m_ppu;
+  Cartridge* m_cartridge;
 };
 
