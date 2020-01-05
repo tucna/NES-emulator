@@ -7,6 +7,7 @@
 #include "NES.h"
 #include "Visualizer.h"
 
+using namespace std;
 
 Visualizer::Visualizer(NES* nes) :
   m_nes(nes),
@@ -74,7 +75,15 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
   ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000"); ImGui::NextColumn();
+  ImGui::End();
 
+  PrepareDisassembledCode(5);
+
+  ImGui::Begin("Disassembly");
+  ImGui::Text("Program counter"); ImGui::SameLine(); ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1), "$0000");
+  ImGui::Separator();
+  for (const string& str : m_disassembledCode)
+    ImGui::Text(str.data());
   ImGui::End();
 
   ImGui::Render();
@@ -90,4 +99,11 @@ bool Visualizer::OnUserDestroy()
   ImGui::DestroyContext();
 
   return true;
+}
+
+void Visualizer::PrepareDisassembledCode(uint8_t lines)
+{
+  m_disassembledCode .clear();
+  m_disassembledCode.push_back("$0000: Hello");
+  m_disassembledCode.push_back("$0001: here");
 }

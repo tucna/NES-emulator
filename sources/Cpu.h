@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,11 @@ public:
 
   Cpu(Bus* bus);
   ~Cpu() {}
+
+  void Reset();
+
+  // Function primarily for debug purpose
+  std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);
 
   bool GetB0() const { return m_status & Flags::C; }
   bool GetB1() const { return m_status & Flags::Z; }

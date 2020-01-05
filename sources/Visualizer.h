@@ -18,8 +18,12 @@ public:
   bool OnUserDestroy() override;
 
 private:
+  void PrepareDisassembledCode(uint8_t lines);
+
   NES* m_nes;
 
   ImVec4 m_redColor;
   ImVec4 m_greenColor;
+
+  std::vector<std::string> m_disassembledCode;
 };

@@ -17,3 +17,8 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
 
   return 0x00;
 }
+
+void Bus::WriteToRAM(size_t index, uint8_t data)
+{
+  m_ram[index] = data;
+}
