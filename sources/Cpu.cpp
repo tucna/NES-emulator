@@ -65,6 +65,44 @@ void Cpu::Reset()
   m_cycles = 8;
 }
 
+void Cpu::Clock()
+{
+  if (m_cycles == 0)
+  {
+    m_opcode = Read(m_programCounter);
+
+    // Always set the unused status flag bit to 1
+    SetFlag(U, true);
+
+    // Increment program counter, we read the opcode byte
+    m_programCounter++;
+
+    // Get Starting number of cycles
+    m_cycles = m_lookup[m_opcode].cycles;
+
+    // Perform fetch of intermmediate data using the
+    // required addressing mode
+    uint8_t additional_cycle1 = (this->*m_lookup[m_opcode].addrmode)();
+
+    // Perform operation
+    uint8_t additional_cycle2 = (this->*m_lookup[m_opcode].operate)();
+
+    // The addressmode and opcode may have altered the number
+    // of cycles this instruction requires before its completed
+    m_cycles += (additional_cycle1 & additional_cycle2);
+
+    // Always set the unused status flag bit to 1
+    SetFlag(U, true);
+  }
+
+  // Increment global clock count - This is actually unused unless logging is enabled
+  // but I've kept it in because its a handy watch variable for debugging
+  m_clockCount++;
+
+  // Decrement the number of cycles remaining for this instruction
+  m_cycles--;
+}
+
 std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t addrStop)
 {
   uint8_t value = 0x00;

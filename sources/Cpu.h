@@ -23,6 +23,7 @@ public:
   ~Cpu() {}
 
   void Reset();
+  void Clock();
 
   // Function primarily for debug purpose
   std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);
@@ -35,6 +36,13 @@ public:
   bool GetB5() const { return m_status & Flags::U; }
   bool GetB6() const { return m_status & Flags::V; }
   bool GetB7() const { return m_status & Flags::N; }
+
+  bool IsCompleted() { return m_cycles == 0; }
+
+  uint8_t GetAcc() const { return m_a; }
+  uint8_t GetRegX() const { return m_x; }
+  uint8_t GetRegY() const { return m_y; }
+  uint8_t GetStakPointer() const { return m_stackPointer; }
 
   uint16_t GetProgramCounter() const { return m_programCounter; }
 
@@ -109,4 +117,3 @@ private:
   // Bus which the CPU is connected to
   Bus* m_bus;
 };
-

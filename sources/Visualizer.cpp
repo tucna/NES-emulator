@@ -11,8 +11,8 @@ using namespace std;
 
 Visualizer::Visualizer(NES* nes) :
   m_nes(nes),
-  m_redColor(1,0,0,1),
-  m_greenColor(0,1,0,1),
+  m_redColor(1, 0, 0, 1),
+  m_greenColor(0, 1, 0, 1),
   m_darkGrayColor(0.6f, 0.6f, 0.6f, 1)
 {
   sAppName = "NES_Emulator";
@@ -41,6 +41,16 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   DrawString(6, 6, "TUCNA", tDX::WHITE);
   DrawString(5, 5, "TUCNA", tDX::RED);
 
+  Cpu& cpu = m_nes->GetCpu();
+
+  if (GetKey(tDX::Key::SPACE).bPressed)
+  {
+    do
+    {
+      cpu.Clock();
+    } while (!cpu.IsCompleted());
+  }
+
   return true;
 }
 
@@ -51,12 +61,27 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
     flag ? ImGui::TextColored(m_greenColor, "Yes") : ImGui::TextColored(m_redColor, "No");
   };
 
+  auto hex = [](uint32_t n, uint8_t d)
+  {
+    std::string s(d + 1, '0');
+    s[0] = '$';
+
+    for (int i = d; i >= 1; i--, n >>= 4)
+      s[i] = "0123456789ABCDEF"[n & 0xF];
+
+    return s;
+  };
+
   const Cpu& cpu = m_nes->GetCpu();
 
   // Start the Dear ImGui frame
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
+
+  string formatAcc = hex(cpu.GetAcc(), 2) + " [" + std::to_string(cpu.GetAcc()) + "]";
+  string formatX = hex(cpu.GetRegX(), 2) + " [" + std::to_string(cpu.GetRegX()) + "]";
+  string formatY = hex(cpu.GetRegY(), 2) + " [" + std::to_string(cpu.GetRegY()) + "]";
 
   ImGui::Begin("CPU information");
   ImGui::Text("Bits");
@@ -71,11 +96,11 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Separator();
   ImGui::Columns(2);
   ImGui::SetColumnWidth(0, 120);
-  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
-  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
-  ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
-  ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
-  ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, "$0000"); ImGui::NextColumn();
+  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(cpu.GetProgramCounter(), 4).data()); ImGui::NextColumn();
+  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(cpu.GetStakPointer(), 4).data()); ImGui::NextColumn();
+  ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatAcc.data()); ImGui::NextColumn();
+  ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatX.data()); ImGui::NextColumn();
+  ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
 
   PrepareDisassembledCode(5);
@@ -89,6 +114,10 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Separator();
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
+  ImGui::End();
+
+  ImGui::Begin("Controls");
+  ImGui::Text("SPACE = Step Instruction    R = RESET    I = IRQ    N = NMI");
   ImGui::End();
 
   ImGui::Render();
@@ -108,7 +137,7 @@ bool Visualizer::OnUserDestroy()
 
 void Visualizer::PrepareDisassembledCode(uint8_t lines)
 {
-  m_disassembledCode .clear();
+  m_disassembledCode.clear();
 
   const Cpu& cpu = m_nes->GetCpu();
   const std::map<uint16_t, std::string>& assembly = m_nes->GetAssembly();
