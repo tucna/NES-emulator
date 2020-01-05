@@ -54,8 +54,6 @@ void NES::InitExample()
   m_bus->WriteToRAM(0xFFFC, 0x00);
   m_bus->WriteToRAM(0xFFFD, 0x80);
 
-  // Dont forget to set IRQ and NMI vectors if you want to play with those
-
   // Extract dissassembly
   m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
 
@@ -73,4 +71,10 @@ void NES::InsertCartridge(const std::string& file)
     // TODO
     return;
   }
+
+  // Extract dissassembly
+  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+
+  // Reset
+  m_cpu->Reset();
 }

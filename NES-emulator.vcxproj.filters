@@ -47,9 +47,6 @@
     <ClCompile Include="sources\Cartridge.cpp">
       <Filter>Hardware\Cartridge</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Mapper.cpp">
-      <Filter>Hardware\Cartridge</Filter>
-    </ClCompile>
     <ClCompile Include="sources\Mapper_000.cpp">
       <Filter>Hardware\Cartridge</Filter>
     </ClCompile>

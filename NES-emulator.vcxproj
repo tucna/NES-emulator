@@ -125,7 +125,6 @@
   <ItemGroup>
     <ClCompile Include="sources\Ppu.cpp" />
     <ClCompile Include="sources\Mapper_000.cpp" />
-    <ClCompile Include="sources\Mapper.cpp" />
     <ClCompile Include="sources\Cartridge.cpp" />
     <ClCompile Include="sources\Bus.cpp" />
     <ClCompile Include="sources\Cpu.cpp" />
