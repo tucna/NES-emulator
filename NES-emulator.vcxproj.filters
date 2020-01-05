@@ -10,6 +10,9 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{c28a9f75-269d-4993-a76c-b85d3f797d3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hardware\Cartridge">
+      <UniqueIdentifier>{82cb6ee2-f21c-4c9d-876d-59078bb70617}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\Cpu.cpp">
@@ -41,6 +44,15 @@
     </ClCompile>
     <ClCompile Include="sources\Main.cpp" />
     <ClCompile Include="sources\Visualizer.cpp" />
+    <ClCompile Include="sources\Cartridge.cpp">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Mapper.cpp">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Mapper_000.cpp">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="sources\engine\ps.cso">
@@ -88,5 +100,14 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="sources\Visualizer.h" />
+    <ClInclude Include="sources\Cartridge.h">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Mapper.h">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClInclude>
+    <ClInclude Include="sources\Mapper_000.h">
+      <Filter>Hardware\Cartridge</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

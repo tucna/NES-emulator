@@ -123,6 +123,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="sources\Mapper_000.cpp" />
+    <ClCompile Include="sources\Mapper.cpp" />
+    <ClCompile Include="sources\Cartridge.cpp" />
     <ClCompile Include="sources\Bus.cpp" />
     <ClCompile Include="sources\Cpu.cpp" />
     <ClCompile Include="sources\imgui\imgui.cpp" />
@@ -140,6 +143,9 @@
     <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sources\Mapper_000.h" />
+    <ClInclude Include="sources\Mapper.h" />
+    <ClInclude Include="sources\Cartridge.h" />
     <ClInclude Include="sources\Bus.h" />
     <ClInclude Include="sources\Cpu.h" />
     <ClInclude Include="sources\engine\tPixelGameEngine.h" />

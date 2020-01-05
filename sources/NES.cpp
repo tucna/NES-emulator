@@ -9,7 +9,9 @@ NES::NES()
   m_bus = make_unique<Bus>();
   m_cpu = make_unique<Cpu>(m_bus.get());
 
-  InitExample();
+  // TODO: some switch here?
+  //InitExample();
+  InitCartridge("roms/nestest.nes");
 }
 
 void NES::InitExample()
@@ -58,4 +60,16 @@ void NES::InitExample()
 
   // Reset
   m_cpu->Reset();
+}
+
+void NES::InitCartridge(const std::string& file)
+{
+  // Load the cartridge
+  m_cartridge = std::make_unique<Cartridge>(file);
+
+  if (!m_cartridge->IsImageValid())
+  {
+    // TODO
+    return;
+  }
 }
