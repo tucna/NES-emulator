@@ -6,7 +6,8 @@
 Cartridge::Cartridge(const std::string & file) :
   m_imageValid(false),
   m_mapperID(0),
-  m_mirror(Mirror::Horizontal)
+  m_mirror(Mirror::Horizontal),
+  m_bus(nullptr)
 {
   struct Header
   {
@@ -72,4 +73,36 @@ Cartridge::Cartridge(const std::string & file) :
     m_imageValid = true;
     ifs.close();
   }
+}
+
+void Cartridge::ReadByCPU(uint16_t addr, uint8_t& data)
+{
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapReadByCPU(addr, mappedAddr);
+  data = m_PRGMemory[mappedAddr];
+}
+
+void Cartridge::WriteByCPU(uint16_t addr, uint8_t data)
+{
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapWriteByCPU(addr, mappedAddr);
+  m_PRGMemory[mappedAddr] = data;
+}
+
+void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
+{
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapReadByPPU(addr, mappedAddr);
+  data = m_CHRMemory[mappedAddr];
+}
+
+void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
+{
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapWriteByPPU(addr, mappedAddr);
+  m_CHRMemory[mappedAddr] = data;
 }

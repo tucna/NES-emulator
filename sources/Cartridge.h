@@ -6,6 +6,8 @@
 
 #include "Mapper.h"
 
+class Bus;
+
 class Cartridge
 {
 public:
@@ -22,6 +24,16 @@ public:
 
   bool IsImageValid() const { return m_imageValid; }
 
+  // Communication with Main Bus
+  void ReadByCPU(uint16_t addr, uint8_t &data);
+  void WriteByCPU(uint16_t addr, uint8_t data);
+
+  // Communication with PPU Bus
+  void ReadByPPU(uint16_t addr, uint8_t &data);
+  void WriteByPPU(uint16_t addr, uint8_t data);
+
+  void ConnectToBus(Bus* bus) { m_bus = bus; }
+
 private:
   bool m_imageValid;
 
@@ -35,5 +47,7 @@ private:
   std::vector<uint8_t> m_CHRMemory;
 
   std::unique_ptr<Mapper> m_mapper;
+
+  Bus* m_bus;
 };
 

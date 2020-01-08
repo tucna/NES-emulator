@@ -2,8 +2,7 @@
 
 #include <array>
 
-#include "Cartridge.h"
-
+class Cartridge;
 class Cpu;
 class Ppu;
 
@@ -18,6 +17,7 @@ public:
 
   void ConnectCpu(Cpu* cpu);
   void ConnectPpu(Ppu* ppu);
+  void ConnectCartridge(Cartridge* cartridge);
 
   // TODO
   void WriteToRAM(size_t index, uint8_t data);

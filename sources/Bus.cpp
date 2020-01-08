@@ -1,4 +1,5 @@
 #include "Bus.h"
+#include "Cartridge.h"
 #include "Cpu.h"
 #include "Ppu.h"
 
@@ -49,6 +50,7 @@ uint8_t Bus::ReadCpu(uint16_t addr, bool bReadOnly)
   else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge  //m_cartridge->cpuRead(addr, data))
   {
     // Not sure if first address should not be 0x8000 to skip the header bits
+    m_cartridge->ReadByCPU(addr, data);
     // Cartridge Address Range
   }
 
@@ -65,6 +67,12 @@ void Bus::ConnectPpu(Ppu * ppu)
 {
   m_ppu = ppu;
   m_ppu->ConnectToBus(this);
+}
+
+void Bus::ConnectCartridge(Cartridge * cartridge)
+{
+  m_cartridge = cartridge;
+  m_cartridge->ConnectToBus(this);
 }
 
 void Bus::WriteToRAM(size_t index, uint8_t data)
