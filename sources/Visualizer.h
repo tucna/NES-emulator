@@ -27,4 +27,6 @@ private:
   ImVec4 m_darkGrayColor;
 
   std::vector<std::string> m_disassembledCode;
+
+  float m_residualTime;
 };

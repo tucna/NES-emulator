@@ -7,8 +7,11 @@ using namespace std;
 NES::NES()
 {
   m_bus = make_unique<Bus>();
-  m_cpu = make_unique<Cpu>(m_bus.get());
+  m_cpu = make_unique<Cpu>();
   m_ppu = make_unique<Ppu>();
+
+  m_bus->ConnectCpu(m_cpu.get());
+  m_bus->ConnectPpu(m_ppu.get());
 
   // TODO: some switch here?
   //InitExample();

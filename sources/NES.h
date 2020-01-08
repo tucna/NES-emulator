@@ -14,6 +14,8 @@ public:
   NES();
   ~NES() {}
 
+  void Clock() { m_bus->Clock(); } // TODO
+
   Bus& GetBus() { return *m_bus; }
   Cpu& GetCpu() { return *m_cpu; }
   Ppu& GetPpu() { return *m_ppu; }

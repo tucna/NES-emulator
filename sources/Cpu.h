@@ -5,6 +5,18 @@
 #include <string>
 #include <vector>
 
+/* CPU memory map
+$0000 - $07FF	$0800	2KB internal RAM
+$0800 - $0FFF	$0800	Mirrors of $0000 - $07FF
+$1000 - $17FF	$0800
+$1800 - $1FFF	$0800
+$2000 - $2007	$0008	NES PPU registers
+$2008 - $3FFF	$1FF8	Mirrors of $2000 - 2007 (repeats every 8 bytes)
+$4000 - $4017	$0018	NES APU and I / O registers
+$4018 - $401F	$0008	APU and I / O functionality that is normally disabled.See CPU Test Mode.
+$4020 - $FFFF	$BFE0	Cartridge space : PRG ROM, PRG RAM, and mapper registers(See Note)
+*/
+
 class Bus;
 
 // NES uses 6502
@@ -19,11 +31,13 @@ public:
     uint8_t cycles;
   };
 
-  Cpu(Bus* bus);
+  Cpu();
   ~Cpu() {}
 
   void Reset();
   void Clock();
+
+  void ConnectToBus(Bus* bus) { m_bus = bus; }
 
   // Function primarily for debug purpose
   std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);

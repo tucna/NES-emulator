@@ -13,7 +13,8 @@ Visualizer::Visualizer(NES* nes) :
   m_nes(nes),
   m_redColor(1, 0, 0, 1),
   m_greenColor(0, 1, 0, 1),
-  m_darkGrayColor(0.6f, 0.6f, 0.6f, 1)
+  m_darkGrayColor(0.6f, 0.6f, 0.6f, 1),
+  m_residualTime(0)
 {
   sAppName = "NES_Emulator";
 
@@ -42,7 +43,20 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   DrawString(5, 5, "TUCNA", tDX::RED);
 
   Cpu& cpu = m_nes->GetCpu();
+  Ppu& ppu = m_nes->GetPpu();
 
+  if (m_residualTime > 0.0f)
+  {
+    m_residualTime -= fElapsedTime;
+  }
+  else
+  {
+    m_residualTime += (1.0f / 60.0f) - fElapsedTime;
+    do { m_nes->Clock(); } while (!ppu.IsFrameCompleted());
+    ppu.SetFrameIncomplete();
+  }
+
+  /*
   if (GetKey(tDX::Key::SPACE).bPressed)
   {
     do
@@ -50,6 +64,7 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
       cpu.Clock();
     } while (!cpu.IsCompleted());
   }
+  */
 
   return true;
 }
@@ -103,7 +118,7 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
 
-  PrepareDisassembledCode(5);
+  PrepareDisassembledCode(5); // TODO
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
 
   ImGui::Begin("Disassembly");

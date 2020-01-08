@@ -6,8 +6,8 @@
 #include "Bus.h"
 #include "Cpu.h"
 
-Cpu::Cpu(Bus* bus) :
-  m_bus(bus),
+Cpu::Cpu() :
+  m_bus(nullptr),
   m_status(0),
   m_fetched(0),
   m_addrAbs(0),
@@ -142,7 +142,7 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     std::string sInst = "$" + hex(addr, 4) + ": ";
 
     // Read instruction, and get its readable name
-    uint8_t opcode = m_bus->Read(addr, true);
+    uint8_t opcode = m_bus->ReadCpu(addr, true);
     addr++; // TODO: could be above
     sInst += m_lookup[opcode].name + " ";
 
@@ -157,68 +157,68 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     }
     else if (m_lookup[opcode].addrmode == &Cpu::IMM)
     {
-      value = m_bus->Read(addr, true); addr++;
+      value = m_bus->ReadCpu(addr, true); addr++;
       sInst += "#$" + hex(value, 2) + " {IMM}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ZP0)
     {
-      lo = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + " {ZP0}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ZPX)
     {
-      lo = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", X {ZPX}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ZPY)
     {
-      lo = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::IZX)
     {
-      lo = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + ", X) {IZX}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::IZY)
     {
-      lo = m_bus->Read(addr, true);
+      lo = m_bus->ReadCpu(addr, true);
       addr++; // TODO: addr can be above everywhere
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + "), Y {IZY}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ABS)
     {
-      lo = m_bus->Read(addr, true); addr++;
-      hi = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
+      hi = m_bus->ReadCpu(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ABX)
     {
-      lo = m_bus->Read(addr, true); addr++;
-      hi = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
+      hi = m_bus->ReadCpu(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::ABY)
     {
-      lo = m_bus->Read(addr, true); addr++;
-      hi = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
+      hi = m_bus->ReadCpu(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::IND)
     {
-      lo = m_bus->Read(addr, true); addr++;
-      hi = m_bus->Read(addr, true); addr++;
+      lo = m_bus->ReadCpu(addr, true); addr++;
+      hi = m_bus->ReadCpu(addr, true); addr++;
       sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
     }
     else if (m_lookup[opcode].addrmode == &Cpu::REL)
     {
-      value = m_bus->Read(addr, true); addr++;
-      sInst += "$" + hex(value, 2) + " [$" + hex(addr + value, 4) + "] {REL}";
+      value = m_bus->ReadCpu(addr, true); addr++;
+      sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
     }
 
     // Add the formed string to a std::map, using the instruction's
@@ -421,12 +421,12 @@ uint8_t Cpu::IZY()
 
 void Cpu::Write(uint16_t addr, uint8_t data)
 {
-  m_bus->Write(addr, data);
+  m_bus->WriteCpu(addr, data);
 }
 
 uint8_t Cpu::Read(uint16_t addr)
 {
-  return m_bus->Read(addr, false);
+  return m_bus->ReadCpu(addr, false);
 }
 
 uint8_t Cpu::Fetch()
