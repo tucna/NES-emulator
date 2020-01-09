@@ -20,12 +20,16 @@ public:
   Cpu& GetCpu() { return *m_cpu; }
   Ppu& GetPpu() { return *m_ppu; }
 
+  std::array<uint8_t, 2 * 1024>& GetRam() { return m_ram; }
+
   const std::map<uint16_t, std::string>& GetAssembly() { return m_asm; }
 
 private:
   void InsertCartridge(const std::string& file);
 
   // Hardware
+  std::array<uint8_t, 2 * 1024> m_ram; // std::array<uint8_t, 2 * 1024> could be typedef
+
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<Cpu> m_cpu;
   std::unique_ptr<Ppu> m_ppu;

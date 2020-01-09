@@ -15,6 +15,8 @@ public:
   void WriteCpu(uint16_t addr, uint8_t data);
   uint8_t ReadCpu(uint16_t addr, bool bReadOnly = false);
 
+  void ConnectRam(std::array<uint8_t, 2 * 1024>* ram);
+
   void ConnectCpu(Cpu* cpu);
   void ConnectPpu(Ppu* ppu);
   void ConnectCartridge(Cartridge* cartridge);
@@ -23,8 +25,7 @@ public:
   void Clock();
 
 private:
-  // TODO - Fake RAM
-  std::array<uint8_t, 2 * 1024> m_ram;
+  std::array<uint8_t, 2 * 1024>* m_ram;
 
   Cpu* m_cpu;
   Ppu* m_ppu;

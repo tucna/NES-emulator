@@ -12,6 +12,7 @@ NES::NES()
 
   m_bus->ConnectCpu(m_cpu.get());
   m_bus->ConnectPpu(m_ppu.get());
+  m_bus->ConnectRam(&m_ram);
 
   InsertCartridge("roms/nestest.nes");
 }
