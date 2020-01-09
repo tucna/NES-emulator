@@ -16,10 +16,10 @@ $3F00 - $3F1F	$0020	Palette RAM indexes
 $3F20 - $3FFF	$00E0	Mirrors of $3F00 - $3F1F
 */
 
-class Bus;
 class Cartridge;
 
 // NES uses 2C02
+// Class covers PPU and its bus
 class Ppu
 {
 public:
@@ -33,7 +33,6 @@ public:
 
   bool IsFrameCompleted() const { return m_frameComplete; }
 
-  void ConnectToBus(Bus* bus) { m_bus = bus; }
   void ConnectCartridge(Cartridge* cartridge);
 
   tDX::Sprite& GetScreen() { return m_sprScreen; }
@@ -53,8 +52,7 @@ private:
   int16_t m_cycle;
 
   tDX::Pixel m_palScreen[0x40];
-  tDX::Sprite m_sprScreen;// = olc::Sprite(256, 240);
+  tDX::Sprite m_sprScreen;
 
-  Bus* m_bus;
   Cartridge* m_cartridge;
 };

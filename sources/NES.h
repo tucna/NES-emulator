@@ -23,7 +23,6 @@ public:
   const std::map<uint16_t, std::string>& GetAssembly() { return m_asm; }
 
 private:
-  void InitExample();
   void InsertCartridge(const std::string& file);
 
   // Hardware

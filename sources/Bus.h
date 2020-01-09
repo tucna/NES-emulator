@@ -20,7 +20,6 @@ public:
   void ConnectCartridge(Cartridge* cartridge);
 
   // TODO
-  void WriteToRAM(size_t index, uint8_t data);
   void Clock();
 
 private:

@@ -29,7 +29,6 @@ void Bus::WriteCpu(uint16_t addr, uint8_t data)
   }
 }
 
-
 uint8_t Bus::ReadCpu(uint16_t addr, bool bReadOnly)
 {
   uint8_t data = 0x00;
@@ -65,18 +64,12 @@ void Bus::ConnectCpu(Cpu * cpu)
 void Bus::ConnectPpu(Ppu * ppu)
 {
   m_ppu = ppu;
-  m_ppu->ConnectToBus(this);
 }
 
 void Bus::ConnectCartridge(Cartridge * cartridge)
 {
   m_cartridge = cartridge;
   m_cartridge->ConnectToBus(this);
-}
-
-void Bus::WriteToRAM(size_t index, uint8_t data)
-{
-  m_ram[index] = data;
 }
 
 void Bus::Clock()

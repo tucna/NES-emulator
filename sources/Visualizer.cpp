@@ -24,7 +24,7 @@ Visualizer::Visualizer(NES* nes) :
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  if (Construct(520, 480, 2, 2))
+  if (Construct(600, 480, 1, 1))
     Start();
 }
 
