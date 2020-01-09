@@ -47,11 +47,10 @@ uint8_t Bus::ReadCpu(uint16_t addr, bool bReadOnly)
   {
     // APU
   }
-  else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge  //m_cartridge->cpuRead(addr, data))
+  else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge
   {
     // Not sure if first address should not be 0x8000 to skip the header bits
     m_cartridge->ReadByCPU(addr, data);
-    // Cartridge Address Range
   }
 
   return data;

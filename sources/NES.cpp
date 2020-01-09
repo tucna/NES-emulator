@@ -69,6 +69,7 @@ void NES::InsertCartridge(const std::string& file)
   // Load the cartridge
   m_cartridge = std::make_unique<Cartridge>(file);
   m_bus->ConnectCartridge(m_cartridge.get());
+  m_ppu->ConnectCartridge(m_cartridge.get());
 
   if (!m_cartridge->IsImageValid())
   {

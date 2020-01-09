@@ -698,14 +698,14 @@ namespace tDX
     nOverdrawCount++;
 #endif
 
-    // This check is too expensive
-    //if (x >= 0 && x < width && y >= 0 && y < height)
-    //{
+    // This check is too expensive - TUCNA - erase this!!
+    if (x >= 0 && x < width && y >= 0 && y < height)
+    {
       pColData[y*width + x] = p;
       return true;
-    //}
-    //else
-    //  return false;
+    }
+    else
+      return false;
   }
 
   Pixel Sprite::Sample(float x, float y)
@@ -1473,6 +1473,9 @@ namespace tDX
 
   void PixelGameEngine::Clear(Pixel p)
   {
+    float color[4] = { (float)p.r, (float)p.g, (float)p.b, (float)p.a };
+    m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), color);
+    /* TUCNA
     int pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
     Pixel* m = GetDrawTarget()->GetData();
     for (int i = 0; i < pixels; i++)
@@ -1480,6 +1483,7 @@ namespace tDX
 #ifdef T_DBG_OVERDRAW
     tDX::Sprite::nOverdrawCount += pixels;
 #endif
+    */
   }
 
   void PixelGameEngine::FillRect(const tDX::vi2d& pos, const tDX::vi2d& size, Pixel p)

@@ -24,7 +24,7 @@ Visualizer::Visualizer(NES* nes) :
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  if (Construct(400, 300, 2, 2))
+  if (Construct(520, 480, 2, 2))
     Start();
 }
 
@@ -39,6 +39,8 @@ bool Visualizer::OnUserCreate()
 
 bool Visualizer::OnUserUpdate(float fElapsedTime)
 {
+  Clear(tDX::BLACK);
+
   DrawString(6, 6, "TUCNA", tDX::WHITE);
   DrawString(5, 5, "TUCNA", tDX::RED);
 
@@ -55,6 +57,9 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
     do { m_nes->Clock(); } while (!ppu.IsFrameCompleted());
     ppu.SetFrameIncomplete();
   }
+
+  DrawSprite(0, 0, &ppu.GetScreen(), 2);
+
 
   /*
   if (GetKey(tDX::Key::SPACE).bPressed)

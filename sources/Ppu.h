@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "Bus.h"
+#include "engine/tPixelGameEngine.h"
 
 /* PPU memory map
 $0000 - $0FFF	$1000	Pattern table 0
@@ -15,6 +15,9 @@ $3000 - $3EFF	$0F00	Mirrors of $2000 - $2EFF
 $3F00 - $3F1F	$0020	Palette RAM indexes
 $3F20 - $3FFF	$00E0	Mirrors of $3F00 - $3F1F
 */
+
+class Bus;
+class Cartridge;
 
 // NES uses 2C02
 class Ppu
@@ -31,6 +34,17 @@ public:
   bool IsFrameCompleted() const { return m_frameComplete; }
 
   void ConnectToBus(Bus* bus) { m_bus = bus; }
+  void ConnectCartridge(Cartridge* cartridge);
+
+  tDX::Sprite& GetScreen() { return m_sprScreen; }
+
+  // Communication with Main Bus
+  uint8_t ReadByCPU(uint16_t addr, bool rdonly = false);
+  void WriteByCPU(uint16_t addr, uint8_t data);
+
+  // Communication with PPU Bus
+  uint8_t ReadByPPU(uint16_t addr, bool rdonly = false);
+  void WriteByPPU(uint16_t addr, uint8_t data);
 
 private:
   bool m_frameComplete;
@@ -38,5 +52,9 @@ private:
   int16_t m_scanline;
   int16_t m_cycle;
 
+  tDX::Pixel m_palScreen[0x40];
+  tDX::Sprite m_sprScreen;// = olc::Sprite(256, 240);
+
   Bus* m_bus;
+  Cartridge* m_cartridge;
 };
