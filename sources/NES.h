@@ -14,7 +14,7 @@ public:
   NES();
   ~NES() {}
 
-  void Clock() { m_bus->Clock(); } // TODO
+  void Clock();
 
   Bus& GetBus() { return *m_bus; }
   Cpu& GetCpu() { return *m_cpu; }
@@ -36,5 +36,7 @@ private:
   std::unique_ptr<Cartridge> m_cartridge; // Not so logical because NES does not "own" the cartridge, but it is simpler
 
   std::map<uint16_t, std::string> m_asm;
+
+  uint32_t m_systemClockCounter;
 };
 

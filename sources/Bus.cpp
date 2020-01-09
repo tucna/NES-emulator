@@ -3,12 +3,11 @@
 #include "Cpu.h"
 #include "Ppu.h"
 
-Bus::Bus() :
-  m_systemClockCounter(0)
+Bus::Bus()
 {
 }
 
-void Bus::WriteCpu(uint16_t addr, uint8_t data)
+void Bus::Write(uint16_t addr, uint8_t data)
 {
   if (addr >= 0x0000 && addr <= 0x1FFF) // Internal RAM + 4 times mirroring
   {
@@ -29,7 +28,7 @@ void Bus::WriteCpu(uint16_t addr, uint8_t data)
   }
 }
 
-uint8_t Bus::ReadCpu(uint16_t addr, bool bReadOnly)
+uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
 {
   uint8_t data = 0x00;
 
@@ -75,16 +74,4 @@ void Bus::ConnectCartridge(Cartridge* cartridge)
 {
   m_cartridge = cartridge;
   m_cartridge->ConnectToBus(this);
-}
-
-void Bus::Clock()
-{
-  m_ppu->Clock();
-
-  if (m_systemClockCounter % 3 == 0)
-  {
-    m_cpu->Clock();
-  }
-
-  m_systemClockCounter++;
 }

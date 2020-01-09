@@ -53,6 +53,7 @@ private:
 
   tDX::Pixel m_palScreen[0x40];
   tDX::Sprite m_sprScreen;
+  tDX::Sprite m_sprPatternTable[2];
 
   Cartridge* m_cartridge;
 };

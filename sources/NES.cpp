@@ -4,7 +4,8 @@
 
 using namespace std;
 
-NES::NES()
+NES::NES() :
+  m_systemClockCounter(0)
 {
   m_bus = make_unique<Bus>();
   m_cpu = make_unique<Cpu>();
@@ -15,6 +16,18 @@ NES::NES()
   m_bus->ConnectRam(&m_ram);
 
   InsertCartridge("roms/nestest.nes");
+}
+
+void NES::Clock()
+{
+  m_ppu->Clock();
+
+  if (m_systemClockCounter % 3 == 0)
+  {
+    m_cpu->Clock();
+  }
+
+  m_systemClockCounter++;
 }
 
 void NES::InsertCartridge(const std::string& file)

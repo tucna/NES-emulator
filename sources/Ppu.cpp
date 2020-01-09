@@ -6,7 +6,8 @@ Ppu::Ppu() :
   m_frameComplete(false),
   m_cycle(0),
   m_scanline(0),
-  m_sprScreen(256, 240) // TUCNA - incorect size, fix this!
+  m_sprScreen(256, 240),
+  m_sprPatternTable{{128, 128}, {128, 128}}
 {
   m_palScreen[0x00] = tDX::Pixel(84, 84, 84);
   m_palScreen[0x01] = tDX::Pixel(0, 30, 116);
