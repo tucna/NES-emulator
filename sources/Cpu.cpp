@@ -103,6 +103,27 @@ void Cpu::Clock()
   m_cycles--;
 }
 
+void Cpu::nmi()
+{
+  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
+  m_stackPointer--;
+  Write(0x0100 + m_stackPointer, m_programCounter & 0x00FF);
+  m_stackPointer--;
+
+  SetFlag(B, 0);
+  SetFlag(U, 1);
+  SetFlag(I, 1);
+  Write(0x0100 + m_stackPointer, m_status);
+  m_stackPointer--;
+
+  m_addrAbs = 0xFFFA;
+  uint16_t lo = Read(m_addrAbs + 0);
+  uint16_t hi = Read(m_addrAbs + 1);
+  m_programCounter = (hi << 8) | lo;
+
+  m_cycles = 8;
+}
+
 std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t addrStop)
 {
   uint8_t value = 0x00;

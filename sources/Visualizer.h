@@ -32,4 +32,9 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  m_patternTable1View;
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  m_patternTable2View;
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP1;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP2;
+
+  bool m_showUI;
 };

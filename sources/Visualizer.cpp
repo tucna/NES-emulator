@@ -14,7 +14,8 @@ Visualizer::Visualizer(NES* nes) :
   m_redColor(1, 0, 0, 1),
   m_greenColor(0, 1, 0, 1),
   m_darkGrayColor(0.6f, 0.6f, 0.6f, 1),
-  m_residualTime(0)
+  m_residualTime(0),
+  m_showUI(false)
 {
   sAppName = "NES_Emulator";
 
@@ -62,12 +63,12 @@ bool Visualizer::OnUserCreate()
   sprite1.SetPixel(126, 127, tDX::WHITE);
   sprite1.SetPixel(125, 127, tDX::WHITE);
 
-  ID3D11Texture2D *pTexture = NULL;
+  //ID3D11Texture2D *pTexture = NULL;
   D3D11_SUBRESOURCE_DATA subResource = {};
   subResource.pSysMem = sprite1.GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
-  d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+  d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP1);
 
   // Create texture view
   D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -75,8 +76,7 @@ bool Visualizer::OnUserCreate()
   srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
   srvDesc.Texture2D.MipLevels = desc.MipLevels;
   srvDesc.Texture2D.MostDetailedMip = 0;
-  d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &m_patternTable1View);
-  pTexture->Release();
+  d3dDevice->CreateShaderResourceView(m_textureP1.Get(), &srvDesc, &m_patternTable1View);
 
   // 2
   tDX::Sprite& sprite2 = m_nes->GetPpu().GetPatternTable(1, 0);
@@ -96,9 +96,8 @@ bool Visualizer::OnUserCreate()
   subResource.pSysMem = sprite2.GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
-  d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
-  d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &m_patternTable2View);
-  pTexture->Release();
+  d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP2);
+  d3dDevice->CreateShaderResourceView(m_textureP2.Get(), &srvDesc, &m_patternTable2View);
 
   return true;
 }
@@ -106,6 +105,8 @@ bool Visualizer::OnUserCreate()
 bool Visualizer::OnUserUpdate(float fElapsedTime)
 {
   Clear(tDX::BLACK);
+
+  if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
 
   DrawString(6, 6, "TUCNA", tDX::WHITE);
   DrawString(5, 5, "TUCNA", tDX::RED);
@@ -124,13 +125,17 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
     ppu.SetFrameIncomplete();
   }
 
-  DrawSprite(0, 0, &ppu.GetScreen(), 2);
+  DrawSprite(0, 0, &ppu.GetScreen(), 1); // TODO: original version has "2" not "1" scale
+  DrawRect(0, 0, ScreenWidth() - 1, ScreenHeight() - 1, tDX::WHITE);
 
   return true;
 }
 
 bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
 {
+  if (!m_showUI)
+    return true;
+
   auto print = [&](bool flag)
   {
     flag ? ImGui::TextColored(m_greenColor, "Yes") : ImGui::TextColored(m_redColor, "No");
@@ -190,6 +195,12 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
+
+  tDX::Sprite& sprite1 = m_nes->GetPpu().GetPatternTable(0, 0);
+  GetContext()->UpdateSubresource(m_textureP1.Get(), 0, NULL, sprite1.GetData(), sprite1.width * 4, 0);
+
+  tDX::Sprite& sprite2 = m_nes->GetPpu().GetPatternTable(1, 0);
+  GetContext()->UpdateSubresource(m_textureP2.Get(), 0, NULL, sprite2.GetData(), sprite2.width * 4, 0);
 
   ImGui::Begin("Pattern table");
   ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128)); ImGui::SameLine(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(128, 128));

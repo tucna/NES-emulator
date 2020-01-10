@@ -16,7 +16,7 @@ void Bus::Write(uint16_t addr, uint8_t data)
   else if (addr >= 0x2000 && addr <= 0x3FFF) // PPU registers + mirroring
   {
     // PPU Address range, mirrored every 8
-    //m_ppu->cpuWrite(addr & 0x0007, data); TODO
+    m_ppu->WriteByCPU(addr & 0x0007, data);
   }
   else if (addr >= 0x4000 && addr <= 0x401F) // APU handling
   {
@@ -39,7 +39,7 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
   else if (addr >= 0x2000 && addr <= 0x3FFF) // PPU registers + mirroring
   {
     // PPU Address range, mirrored every 8
-    //data = m_ppu->cpuRead(addr & 0x0007, bReadOnly); TODO
+    data = m_ppu->ReadByCPU(addr & 0x0007, bReadOnly);
   }
   else if (addr >= 0x4000 && addr <= 0x401F) // APU handling
   {

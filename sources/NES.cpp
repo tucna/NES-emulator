@@ -27,6 +27,13 @@ void NES::Clock()
     m_cpu->Clock();
   }
 
+  // TUCNA
+  if (m_ppu->nmi)
+  {
+    m_ppu->nmi = false;
+    m_cpu->nmi(); //TUCNA
+  }
+
   m_systemClockCounter++;
 }
 
