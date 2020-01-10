@@ -31,4 +31,5 @@ private:
   float m_residualTime;
 
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  m_patternTable1View;
+  Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>  m_patternTable2View;
 };

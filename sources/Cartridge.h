@@ -34,6 +34,8 @@ public:
 
   void ConnectToBus(Bus* bus) { m_bus = bus; }
 
+  Mirror GetMirroring() { return m_mirror; }
+
 private:
   bool m_imageValid;
 

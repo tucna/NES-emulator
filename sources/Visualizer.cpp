@@ -48,34 +48,56 @@ bool Visualizer::OnUserCreate()
   desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags = 0;
 
-  tDX::Sprite& sprite = m_nes->GetPpu().GetPatternTable(0, 0);
-  sprite.SetPixel(0, 0, tDX::WHITE);
-  sprite.SetPixel(0, 1, tDX::WHITE);
-  sprite.SetPixel(0, 2, tDX::WHITE);
-  sprite.SetPixel(1, 0, tDX::WHITE);
-  sprite.SetPixel(2, 0, tDX::WHITE);
+  // 1
+  tDX::Sprite& sprite1 = m_nes->GetPpu().GetPatternTable(0, 0);
+  sprite1.SetPixel(0, 0, tDX::WHITE);
+  sprite1.SetPixel(0, 1, tDX::WHITE);
+  sprite1.SetPixel(0, 2, tDX::WHITE);
+  sprite1.SetPixel(1, 0, tDX::WHITE);
+  sprite1.SetPixel(2, 0, tDX::WHITE);
 
-  sprite.SetPixel(127, 127, tDX::WHITE);
-  sprite.SetPixel(127, 126, tDX::WHITE);
-  sprite.SetPixel(127, 125, tDX::WHITE);
-  sprite.SetPixel(126, 127, tDX::WHITE);
-  sprite.SetPixel(125, 127, tDX::WHITE);
+  sprite1.SetPixel(127, 127, tDX::WHITE);
+  sprite1.SetPixel(127, 126, tDX::WHITE);
+  sprite1.SetPixel(127, 125, tDX::WHITE);
+  sprite1.SetPixel(126, 127, tDX::WHITE);
+  sprite1.SetPixel(125, 127, tDX::WHITE);
 
   ID3D11Texture2D *pTexture = NULL;
-  D3D11_SUBRESOURCE_DATA subResource;
-  subResource.pSysMem = sprite.GetData(); //m_nes->GetPpu().GetPatternTable(0, 0).GetData();
+  D3D11_SUBRESOURCE_DATA subResource = {};
+  subResource.pSysMem = sprite1.GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
 
   // Create texture view
-  D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-  ZeroMemory(&srvDesc, sizeof(srvDesc));
+  D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
   srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
   srvDesc.Texture2D.MipLevels = desc.MipLevels;
   srvDesc.Texture2D.MostDetailedMip = 0;
   d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &m_patternTable1View);
+  pTexture->Release();
+
+  // 2
+  tDX::Sprite& sprite2 = m_nes->GetPpu().GetPatternTable(1, 0);
+  sprite2.SetPixel(0, 0, tDX::RED);
+  sprite2.SetPixel(0, 1, tDX::RED);
+  sprite2.SetPixel(0, 2, tDX::RED);
+  sprite2.SetPixel(1, 0, tDX::RED);
+  sprite2.SetPixel(2, 0, tDX::RED);
+
+  sprite2.SetPixel(127, 127, tDX::RED);
+  sprite2.SetPixel(127, 126, tDX::RED);
+  sprite2.SetPixel(127, 125, tDX::RED);
+  sprite2.SetPixel(126, 127, tDX::RED);
+  sprite2.SetPixel(125, 127, tDX::RED);
+
+  subResource = {};
+  subResource.pSysMem = sprite2.GetData();
+  subResource.SysMemPitch = desc.Width * 4;
+  subResource.SysMemSlicePitch = 0;
+  d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+  d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &m_patternTable2View);
   pTexture->Release();
 
   return true;
@@ -170,7 +192,7 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::End();
 
   ImGui::Begin("Pattern table");
-  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128));
+  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128)); ImGui::SameLine(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(128, 128));
   ImGui::End();
 
   ImGui::Render();
