@@ -104,6 +104,12 @@ void Ppu::ConnectCartridge(Cartridge * cartridge)
   m_cartridge = cartridge;
 }
 
+tDX::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
+{
+  // TODO
+  return m_sprPatternTable[i];
+}
+
 uint8_t Ppu::ReadByCPU(uint16_t addr, bool rdonly)
 {
   return uint8_t();

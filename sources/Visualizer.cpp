@@ -24,7 +24,7 @@ Visualizer::Visualizer(NES* nes) :
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  if (Construct(600, 480, 1, 1))
+  if (Construct(256, 240, 2, 2))
     Start();
 }
 
@@ -33,6 +33,50 @@ bool Visualizer::OnUserCreate()
   // Setup Platform/Renderer bindings
   ImGui_ImplWin32_Init(GetHWND());
   ImGui_ImplDX11_Init(GetDevice(), GetContext());
+
+  // Setup debug textures
+  ID3D11Device* d3dDevice = GetDevice();
+
+  D3D11_TEXTURE2D_DESC desc = {};
+  desc.Width = 128; // TODO - fixed values, not cool
+  desc.Height = 128;
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.SampleDesc.Count = 1;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+  desc.CPUAccessFlags = 0;
+
+  tDX::Sprite& sprite = m_nes->GetPpu().GetPatternTable(0, 0);
+  sprite.SetPixel(0, 0, tDX::WHITE);
+  sprite.SetPixel(0, 1, tDX::WHITE);
+  sprite.SetPixel(0, 2, tDX::WHITE);
+  sprite.SetPixel(1, 0, tDX::WHITE);
+  sprite.SetPixel(2, 0, tDX::WHITE);
+
+  sprite.SetPixel(127, 127, tDX::WHITE);
+  sprite.SetPixel(127, 126, tDX::WHITE);
+  sprite.SetPixel(127, 125, tDX::WHITE);
+  sprite.SetPixel(126, 127, tDX::WHITE);
+  sprite.SetPixel(125, 127, tDX::WHITE);
+
+  ID3D11Texture2D *pTexture = NULL;
+  D3D11_SUBRESOURCE_DATA subResource;
+  subResource.pSysMem = sprite.GetData(); //m_nes->GetPpu().GetPatternTable(0, 0).GetData();
+  subResource.SysMemPitch = desc.Width * 4;
+  subResource.SysMemSlicePitch = 0;
+  d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+
+  // Create texture view
+  D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+  ZeroMemory(&srvDesc, sizeof(srvDesc));
+  srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+  srvDesc.Texture2D.MipLevels = desc.MipLevels;
+  srvDesc.Texture2D.MostDetailedMip = 0;
+  d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, &m_patternTable1View);
+  pTexture->Release();
 
   return true;
 }
@@ -59,17 +103,6 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   }
 
   DrawSprite(0, 0, &ppu.GetScreen(), 2);
-
-
-  /*
-  if (GetKey(tDX::Key::SPACE).bPressed)
-  {
-    do
-    {
-      cpu.Clock();
-    } while (!cpu.IsCompleted());
-  }
-  */
 
   return true;
 }
@@ -136,8 +169,8 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
 
-  ImGui::Begin("Controls");
-  ImGui::Text("SPACE = Step Instruction    R = RESET    I = IRQ    N = NMI");
+  ImGui::Begin("Pattern table");
+  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128));
   ImGui::End();
 
   ImGui::Render();
