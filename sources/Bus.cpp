@@ -18,13 +18,9 @@ void Bus::Write(uint16_t addr, uint8_t data)
     // PPU Address range, mirrored every 8
     m_ppu->WriteByCPU(addr & 0x0007, data);
   }
-  else if (addr >= 0x4000 && addr <= 0x401F) // APU handling
+  else if (addr >= 0x4016 && addr <= 0x4017)
   {
-    // APU
-  }
-  else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge  //m_cartridge->cpuRead(addr, data))
-  {
-    // Cartridge Address Range
+    m_controllerState[addr & 0x0001] = m_controller[addr & 0x0001];
   }
 }
 
@@ -41,9 +37,10 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
     // PPU Address range, mirrored every 8
     data = m_ppu->ReadByCPU(addr & 0x0007, bReadOnly);
   }
-  else if (addr >= 0x4000 && addr <= 0x401F) // APU handling
+  else if (addr >= 0x4016 && addr <= 0x4017)
   {
-    // APU
+    data = (m_controllerState[addr & 0x0001] & 0x80) > 0;
+    m_controllerState[addr & 0x0001] <<= 1;
   }
   else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge
   {

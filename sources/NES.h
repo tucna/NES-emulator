@@ -24,6 +24,9 @@ public:
 
   const std::map<uint16_t, std::string>& GetAssembly() { return m_asm; }
 
+  // TODO
+  uint8_t& GetContr() { return m_bus->GetController1(); }
+
 private:
   void InsertCartridge(const std::string& file);
 

@@ -25,7 +25,7 @@ Visualizer::Visualizer(NES* nes) :
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  if (Construct(256, 240, 2, 2))
+  if (Construct(500, 480, 2, 2))
     Start();
 }
 
@@ -49,23 +49,8 @@ bool Visualizer::OnUserCreate()
   desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags = 0;
 
-  // 1
-  tDX::Sprite& sprite1 = m_nes->GetPpu().GetPatternTable(0, 0);
-  sprite1.SetPixel(0, 0, tDX::WHITE);
-  sprite1.SetPixel(0, 1, tDX::WHITE);
-  sprite1.SetPixel(0, 2, tDX::WHITE);
-  sprite1.SetPixel(1, 0, tDX::WHITE);
-  sprite1.SetPixel(2, 0, tDX::WHITE);
-
-  sprite1.SetPixel(127, 127, tDX::WHITE);
-  sprite1.SetPixel(127, 126, tDX::WHITE);
-  sprite1.SetPixel(127, 125, tDX::WHITE);
-  sprite1.SetPixel(126, 127, tDX::WHITE);
-  sprite1.SetPixel(125, 127, tDX::WHITE);
-
-  //ID3D11Texture2D *pTexture = NULL;
   D3D11_SUBRESOURCE_DATA subResource = {};
-  subResource.pSysMem = sprite1.GetData();
+  subResource.pSysMem = m_nes->GetPpu().GetPatternTable(0, 0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP1);
@@ -78,22 +63,8 @@ bool Visualizer::OnUserCreate()
   srvDesc.Texture2D.MostDetailedMip = 0;
   d3dDevice->CreateShaderResourceView(m_textureP1.Get(), &srvDesc, &m_patternTable1View);
 
-  // 2
-  tDX::Sprite& sprite2 = m_nes->GetPpu().GetPatternTable(1, 0);
-  sprite2.SetPixel(0, 0, tDX::RED);
-  sprite2.SetPixel(0, 1, tDX::RED);
-  sprite2.SetPixel(0, 2, tDX::RED);
-  sprite2.SetPixel(1, 0, tDX::RED);
-  sprite2.SetPixel(2, 0, tDX::RED);
-
-  sprite2.SetPixel(127, 127, tDX::RED);
-  sprite2.SetPixel(127, 126, tDX::RED);
-  sprite2.SetPixel(127, 125, tDX::RED);
-  sprite2.SetPixel(126, 127, tDX::RED);
-  sprite2.SetPixel(125, 127, tDX::RED);
-
   subResource = {};
-  subResource.pSysMem = sprite2.GetData();
+  subResource.pSysMem = m_nes->GetPpu().GetPatternTable(1, 0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP2);
@@ -106,10 +77,19 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
 {
   Clear(tDX::BLACK);
 
-  if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
+  uint8_t& controller = m_nes->GetContr();
 
-  DrawString(6, 6, "TUCNA", tDX::WHITE);
-  DrawString(5, 5, "TUCNA", tDX::RED);
+  controller = 0x00;
+  controller |= GetKey(tDX::Key::X).bHeld ? 0x80 : 0x00;
+  controller |= GetKey(tDX::Key::Z).bHeld ? 0x40 : 0x00;
+  controller |= GetKey(tDX::Key::A).bHeld ? 0x20 : 0x00;
+  controller |= GetKey(tDX::Key::S).bHeld ? 0x10 : 0x00;
+  controller |= GetKey(tDX::Key::UP).bHeld ? 0x08 : 0x00;
+  controller |= GetKey(tDX::Key::DOWN).bHeld ? 0x04 : 0x00;
+  controller |= GetKey(tDX::Key::LEFT).bHeld ? 0x02 : 0x00;
+  controller |= GetKey(tDX::Key::RIGHT).bHeld ? 0x01 : 0x00;
+
+  if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
 
   Cpu& cpu = m_nes->GetCpu();
   Ppu& ppu = m_nes->GetPpu();
@@ -125,8 +105,7 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
     ppu.SetFrameIncomplete();
   }
 
-  DrawSprite(0, 0, &ppu.GetScreen(), 1); // TODO: original version has "2" not "1" scale
-  DrawRect(0, 0, ScreenWidth() - 1, ScreenHeight() - 1, tDX::WHITE);
+  DrawSprite(0, 0, &ppu.GetScreen(), 2); // TODO: original version has "2" not "1" scale
 
   return true;
 }
