@@ -1475,15 +1475,6 @@ namespace tDX
   {
     float color[4] = { (float)p.r, (float)p.g, (float)p.b, (float)p.a };
     m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), color);
-    /* TUCNA
-    int pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
-    Pixel* m = GetDrawTarget()->GetData();
-    for (int i = 0; i < pixels; i++)
-      m[i] = p;
-#ifdef T_DBG_OVERDRAW
-    tDX::Sprite::nOverdrawCount += pixels;
-#endif
-    */
   }
 
   void PixelGameEngine::FillRect(const tDX::vi2d& pos, const tDX::vi2d& size, Pixel p)

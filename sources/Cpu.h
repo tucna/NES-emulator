@@ -35,14 +35,11 @@ public:
   ~Cpu() {}
 
   void Reset();
+  void NMI();
   void Clock();
-  // TUCNA
-  void NMI();		// Non-Maskable Interrupt Request - As above, but cannot be disabled
-
 
   void ConnectToBus(Bus* bus) { m_bus = bus; }
 
-  // Function primarily for debug purpose
   std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);
 
   bool GetB0() const { return m_status & Flags::C; }

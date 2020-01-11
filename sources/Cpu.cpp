@@ -134,10 +134,6 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
 
   std::map<uint16_t, std::string> mapLines;
 
-  // A convenient utility to convert variables into
-  // hex strings because "modern C++"'s method with
-  // streams is atrocious
-  // TODO: check
   auto hex = [](uint32_t n, uint8_t d)
   {
     std::string s(d, '0');
@@ -147,14 +143,6 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     return s;
   };
 
-  // Starting at the specified address we read an instruction
-  // byte, which in turn yields information from the lookup table
-  // as to how many additional bytes we need to read and what the
-  // addressing mode is. I need this info to assemble human readable
-  // syntax, which is different depending upon the addressing mode
-
-  // As the instruction is decoded, a std::string is assembled
-  // with the readable output
   while (addr <= (uint32_t)addrStop)
   {
     lineAddr = addr;
@@ -163,15 +151,9 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     std::string sInst = "$" + hex(addr, 4) + ": ";
 
     // Read instruction, and get its readable name
-    uint8_t opcode = m_bus->Read(addr, true);
-    addr++; // TODO: could be above
+    uint8_t opcode = m_bus->Read(addr, true); addr++;
     sInst += m_lookup[opcode].name + " ";
 
-    // Get oprands from desired locations, and form the
-    // instruction based upon its addressing mode. These
-    // routines mimmick the actual fetch routine of the
-    // 6502 in order to get accurate data as part of the
-    // instruction
     if (m_lookup[opcode].addrmode == &Cpu::IMP)
     {
       sInst += " {IMP}";
@@ -207,8 +189,7 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     }
     else if (m_lookup[opcode].addrmode == &Cpu::IZY)
     {
-      lo = m_bus->Read(addr, true);
-      addr++; // TODO: addr can be above everywhere
+      lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + "), Y {IZY}";
     }
@@ -242,10 +223,6 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
       sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
     }
 
-    // Add the formed string to a std::map, using the instruction's
-    // address as the key. This makes it convenient to look for later
-    // as the instructions are variable in length, so a straight up
-    // incremental index is not sufficient.
     mapLines[lineAddr] = sInst;
   }
 
@@ -1043,7 +1020,8 @@ uint8_t Cpu::NOP()
   // based on https://wiki.nesdev.com/w/index.php/CPU_unofficial_opcodes
   // and will add more based on game compatibility, and ultimately
   // I'd like to cover all illegal opcodes too
-  switch (m_opcode) {
+  switch (m_opcode)
+  {
   case 0x1C:
   case 0x3C:
   case 0x5C:

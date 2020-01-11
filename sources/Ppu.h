@@ -112,28 +112,31 @@ private:
       uint16_t unused : 1;
     };
 
-    uint16_t reg = 0x0000;
+    uint16_t reg;
   };
+
+  struct
+  {
+    uint8_t nextTileId;
+    uint8_t nextTileAttr;
+    uint8_t nextTileLsb;
+    uint8_t nextTileMsb;
+
+    uint16_t shifterPatternLo;
+    uint16_t shifterPatternHi;
+    uint16_t shifterAttrLo;
+    uint16_t shifterAttribHi;
+  } m_backgroudAttributes;
 
   LoopyRegister m_vramAddr;
   LoopyRegister m_tranAddr;
 
-  // Background rendering
-  uint8_t bg_next_tile_id = 0x00;
-  uint8_t bg_next_tile_attrib = 0x00;
-  uint8_t bg_next_tile_lsb = 0x00;
-  uint8_t bg_next_tile_msb = 0x00;
-  uint16_t bg_shifter_pattern_lo = 0x0000;
-  uint16_t bg_shifter_pattern_hi = 0x0000;
-  uint16_t bg_shifter_attrib_lo = 0x0000;
-  uint16_t bg_shifter_attrib_hi = 0x0000;
-
   // Pixel offset horizontally
-  uint8_t fine_x = 0x00;
+  uint8_t m_fineX;
 
   // Internal communications
-	uint8_t address_latch = 0x00; // TUCNA
-	uint8_t ppu_data_buffer = 0x00;
+	uint8_t m_addressLatch;
+	uint8_t m_dataBuffer;
 
   bool m_frameComplete;
   bool m_nmi;
@@ -141,7 +144,7 @@ private:
   int16_t m_scanline;
   int16_t m_cycle;
 
-  uint8_t m_tblName[2][1024]; // TUCNA
+  uint8_t m_tblName[2][1024];
   uint8_t m_tblPalette[32];
 
   tDX::Pixel m_palScreen[0x40];
