@@ -28,10 +28,13 @@ public:
 
   void Clock();
 
-  // TODO I do not like this logic
-  void SetFrameIncomplete() { m_frameComplete = false; }
-
   bool IsFrameCompleted() const { return m_frameComplete; }
+
+  // Requests
+  bool NMI() { return m_nmi; }
+
+  // Set reguest to "handled"
+  void NMIHandled() { m_nmi = false; }
 
   void ConnectCartridge(Cartridge* cartridge);
 
@@ -46,8 +49,6 @@ public:
   uint8_t ReadByPPU(uint16_t addr, bool rdonly = false);
   void WriteByPPU(uint16_t addr, uint8_t data);
 
-  bool nmi = false; // TUCNA
-
 private:
   tDX::Pixel& GetColourFromPaletteRam(uint8_t palette, uint8_t pixel);
 
@@ -55,68 +56,67 @@ private:
   {
     struct
     {
-      uint8_t grayscale : 1;
-      uint8_t render_background_left : 1;
-      uint8_t render_sprites_left : 1;
-      uint8_t render_background : 1;
-      uint8_t render_sprites : 1;
-      uint8_t enhance_red : 1;
-      uint8_t enhance_green : 1;
-      uint8_t enhance_blue : 1;
+      uint8_t Nx : 1; // nametable select
+      uint8_t Ny : 1; // nametable select
+      uint8_t I : 1; // increment mode
+      uint8_t S : 1; // sprite tile select
+      uint8_t B : 1; // background tile select
+      uint8_t H : 1; // sprite height
+      uint8_t P : 1; // PPU master/slave
+      uint8_t V : 1; // NMI enable
     };
 
     uint8_t reg;
-  } mask;
-
-  union PPUCTRL
-  {
-    struct
-    {
-      uint8_t nametable_x : 1;
-      uint8_t nametable_y : 1;
-      uint8_t increment_mode : 1;
-      uint8_t pattern_sprite : 1;
-      uint8_t pattern_background : 1;
-      uint8_t sprite_size : 1;
-      uint8_t slave_mode : 1; // unused
-      uint8_t enable_nmi : 1;
-    };
-
-    uint8_t reg;
-  } control;
+  } PPUCTRL;
 
   union
   {
     struct
     {
-      uint8_t unused : 5;
-      uint8_t sprite_overflow : 1;
-      uint8_t sprite_zero_hit : 1;
-      uint8_t vertical_blank : 1;
+      uint8_t Gr : 1; // greyscale
+      uint8_t m : 1; // background left column enable
+      uint8_t M : 1; // sprite left column enable
+      uint8_t b : 1; // background enable
+      uint8_t s : 1; // sprite enable
+      uint8_t R : 1; // color emphasis R
+      uint8_t G : 1; // color emphasis G
+      uint8_t B : 1; // color emphasis B
     };
 
     uint8_t reg;
-  } status;
+  } PPUMASK;
 
-  union loopy_register
+  union
   {
-    // Credit to Loopy for working this out :D
+    struct
+    {
+      uint8_t unused : 5; // read resets write pair for $2005 / $2006
+      uint8_t O : 1; // sprite overflow
+      uint8_t S : 1; // sprite 0 hit
+      uint8_t V : 1; // vblank
+    };
+
+    uint8_t reg;
+  } PPUSTATUS;
+
+  union LoopyRegister
+  {
     struct
     {
 
-      uint16_t coarse_x : 5;
-      uint16_t coarse_y : 5;
-      uint16_t nametable_x : 1;
-      uint16_t nametable_y : 1;
-      uint16_t fine_y : 3;
+      uint16_t coarseX : 5;
+      uint16_t coarseY : 5;
+      uint16_t nametableX : 1;
+      uint16_t nametableY : 1;
+      uint16_t fineY : 3;
       uint16_t unused : 1;
     };
 
     uint16_t reg = 0x0000;
   };
 
-  loopy_register vram_addr; // Active "pointer" address into nametable to extract background tile info
-  loopy_register tram_addr; // Temporary store of information to be "transferred" into "pointer" at various times
+  LoopyRegister m_vramAddr;
+  LoopyRegister m_tranAddr;
 
   // Background rendering
   uint8_t bg_next_tile_id = 0x00;
@@ -136,6 +136,7 @@ private:
 	uint8_t ppu_data_buffer = 0x00;
 
   bool m_frameComplete;
+  bool m_nmi;
 
   int16_t m_scanline;
   int16_t m_cycle;

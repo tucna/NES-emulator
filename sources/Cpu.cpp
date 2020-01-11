@@ -103,7 +103,7 @@ void Cpu::Clock()
   m_cycles--;
 }
 
-void Cpu::nmi()
+void Cpu::NMI()
 {
   Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
   m_stackPointer--;

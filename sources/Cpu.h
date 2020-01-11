@@ -37,7 +37,7 @@ public:
   void Reset();
   void Clock();
   // TUCNA
-  void nmi();		// Non-Maskable Interrupt Request - As above, but cannot be disabled
+  void NMI();		// Non-Maskable Interrupt Request - As above, but cannot be disabled
 
 
   void ConnectToBus(Bus* bus) { m_bus = bus; }

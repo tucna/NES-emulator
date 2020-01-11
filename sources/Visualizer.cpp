@@ -102,10 +102,9 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   {
     m_residualTime += (1.0f / 60.0f) - fElapsedTime;
     do { m_nes->Clock(); } while (!ppu.IsFrameCompleted());
-    ppu.SetFrameIncomplete();
   }
 
-  DrawSprite(0, 0, &ppu.GetScreen(), 2); // TODO: original version has "2" not "1" scale
+  DrawSprite(0, 0, &ppu.GetScreen(), 2);
 
   return true;
 }
