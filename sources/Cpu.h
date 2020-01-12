@@ -98,7 +98,9 @@ private:
   uint8_t STX();	uint8_t STY();	uint8_t TAX();	uint8_t TAY();
   uint8_t TSX();	uint8_t TXA();	uint8_t TXS();	uint8_t TYA();
 
-  // Unofficial opcode
+  // Unofficial opcodes
+  uint8_t LAX();
+
   uint8_t XXX();
 
   void Write(uint16_t addr, uint8_t data);
