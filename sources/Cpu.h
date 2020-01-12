@@ -25,6 +25,7 @@ class Cpu
 public:
   struct Instruction
   {
+    uint8_t opcode;
     std::string name;
     uint8_t(Cpu::*operate)(void);
     uint8_t(Cpu::*addrmode)(void);

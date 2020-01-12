@@ -9,7 +9,7 @@ class Ppu;
 class Bus
 {
 public:
-  Bus();
+  Bus() {}
   ~Bus() {}
 
   void Write(uint16_t addr, uint8_t data);

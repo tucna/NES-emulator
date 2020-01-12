@@ -3,10 +3,6 @@
 #include "Cpu.h"
 #include "Ppu.h"
 
-Bus::Bus()
-{
-}
-
 void Bus::Write(uint16_t addr, uint8_t data)
 {
   if (addr >= 0x0000 && addr <= 0x1FFF) // Internal RAM + 4 times mirroring
