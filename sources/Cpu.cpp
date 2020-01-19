@@ -1,8 +1,3 @@
-/*
-  Addressing modes, lookup table and instructions are taken from NES emulator of javidx9 - OneLoneCoder.com.
-  Thank you for the great work!
-*/
-
 #include "Bus.h"
 #include "Cpu.h"
 

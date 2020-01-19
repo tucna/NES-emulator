@@ -1,3 +1,8 @@
+/*
+  Addressing modes, lookup table and official instructions are taken from NES emulator of javidx9 - OneLoneCoder.com.
+  Thank you for the great work!
+*/
+
 #pragma once
 
 #include <array>
