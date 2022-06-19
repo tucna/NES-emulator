@@ -12,7 +12,8 @@ Cpu::Cpu() :
   m_cycles(0),
   m_clockCount(0)
 {
-  // Taken from javidx9 - thanks!
+  // Basic version taken from javidx9 - thanks!
+  // {opcode, mnemonic, function pointer, address mode pointer, number clock cycles}
   m_lookup =
   {
     { 0x00, "BRK", &Cpu::BRK, &Cpu::IMM, 7 },{ 0x01, "ORA", &Cpu::ORA, &Cpu::IZX, 6 },{ 0x02, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x03, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0x04, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x05, "ORA", &Cpu::ORA, &Cpu::ZP0, 3 },{ 0x06, "ASL", &Cpu::ASL, &Cpu::ZP0, 5 },{ 0x07, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x08, "PHP", &Cpu::PHP, &Cpu::IMP, 3 },{ 0x09, "ORA", &Cpu::ORA, &Cpu::IMM, 2 },{ 0x0A, "ASL", &Cpu::ASL, &Cpu::IMP, 2 },{ 0x0B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x0C, "NOP", &Cpu::NOP, &Cpu::ABS, 4 },{ 0x0D, "ORA", &Cpu::ORA, &Cpu::ABS, 4 },{ 0x0E, "ASL", &Cpu::ASL, &Cpu::ABS, 6 },{ 0x0F, "???", &Cpu::XXX, &Cpu::IMP, 6 },
@@ -27,8 +28,8 @@ Cpu::Cpu() :
     { 0x90, "BCC", &Cpu::BCC, &Cpu::REL, 2 },{ 0x91, "STA", &Cpu::STA, &Cpu::IZY, 6 },{ 0x92, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x93, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0x94, "STY", &Cpu::STY, &Cpu::ZPX, 4 },{ 0x95, "STA", &Cpu::STA, &Cpu::ZPX, 4 },{ 0x96, "STX", &Cpu::STX, &Cpu::ZPY, 4 },{ 0x97, "SAX", &Cpu::SAX, &Cpu::ZPY, 4 },{ 0x98, "TYA", &Cpu::TYA, &Cpu::IMP, 2 },{ 0x99, "STA", &Cpu::STA, &Cpu::ABY, 5 },{ 0x9A, "TXS", &Cpu::TXS, &Cpu::IMP, 2 },{ 0x9B, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9C, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9D, "STA", &Cpu::STA, &Cpu::ABX, 5 },{ 0x9E, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9F, "???", &Cpu::XXX, &Cpu::IMP, 5 },
     { 0xA0, "LDY", &Cpu::LDY, &Cpu::IMM, 2 },{ 0xA1, "LDA", &Cpu::LDA, &Cpu::IZX, 6 },{ 0xA2, "LDX", &Cpu::LDX, &Cpu::IMM, 2 },{ 0xA3, "LAX", &Cpu::LAX, &Cpu::IZX, 6 },{ 0xA4, "LDY", &Cpu::LDY, &Cpu::ZP0, 3 },{ 0xA5, "LDA", &Cpu::LDA, &Cpu::ZP0, 3 },{ 0xA6, "LDX", &Cpu::LDX, &Cpu::ZP0, 3 },{ 0xA7, "LAX", &Cpu::LAX, &Cpu::ZP0, 3 },{ 0xA8, "TAY", &Cpu::TAY, &Cpu::IMP, 2 },{ 0xA9, "LDA", &Cpu::LDA, &Cpu::IMM, 2 },{ 0xAA, "TAX", &Cpu::TAX, &Cpu::IMP, 2 },{ 0xAB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xAC, "LDY", &Cpu::LDY, &Cpu::ABS, 4 },{ 0xAD, "LDA", &Cpu::LDA, &Cpu::ABS, 4 },{ 0xAE, "LDX", &Cpu::LDX, &Cpu::ABS, 4 },{ 0xAF, "LAX", &Cpu::LAX, &Cpu::ABS, 4 },
     { 0xB0, "BCS", &Cpu::BCS, &Cpu::REL, 2 },{ 0xB1, "LDA", &Cpu::LDA, &Cpu::IZY, 5 },{ 0xB2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xB3, "LAX", &Cpu::LAX, &Cpu::IZY, 5 },{ 0xB4, "LDY", &Cpu::LDY, &Cpu::ZPX, 4 },{ 0xB5, "LDA", &Cpu::LDA, &Cpu::ZPX, 4 },{ 0xB6, "LDX", &Cpu::LDX, &Cpu::ZPY, 4 },{ 0xB7, "LAX", &Cpu::LAX, &Cpu::ZPY, 4 },{ 0xB8, "CLV", &Cpu::CLV, &Cpu::IMP, 2 },{ 0xB9, "LDA", &Cpu::LDA, &Cpu::ABY, 4 },{ 0xBA, "TSX", &Cpu::TSX, &Cpu::IMP, 2 },{ 0xBB, "???", &Cpu::XXX, &Cpu::IMP, 4 },{ 0xBC, "LDY", &Cpu::LDY, &Cpu::ABX, 4 },{ 0xBD, "LDA", &Cpu::LDA, &Cpu::ABX, 4 },{ 0xBE, "LDX", &Cpu::LDX, &Cpu::ABY, 4 },{ 0xBF, "LAX", &Cpu::LAX, &Cpu::ABY, 4 },
-    { 0xC0, "CPY", &Cpu::CPY, &Cpu::IMM, 2 },{ 0xC1, "CMP", &Cpu::CMP, &Cpu::IZX, 6 },{ 0xC2, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0xC3, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0xC4, "CPY", &Cpu::CPY, &Cpu::ZP0, 3 },{ 0xC5, "CMP", &Cpu::CMP, &Cpu::ZP0, 3 },{ 0xC6, "DEC", &Cpu::DEC, &Cpu::ZP0, 5 },{ 0xC7, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0xC8, "INY", &Cpu::INY, &Cpu::IMP, 2 },{ 0xC9, "CMP", &Cpu::CMP, &Cpu::IMM, 2 },{ 0xCA, "DEX", &Cpu::DEX, &Cpu::IMP, 2 },{ 0xCB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xCC, "CPY", &Cpu::CPY, &Cpu::ABS, 4 },{ 0xCD, "CMP", &Cpu::CMP, &Cpu::ABS, 4 },{ 0xCE, "DEC", &Cpu::DEC, &Cpu::ABS, 6 },{ 0xCF, "???", &Cpu::XXX, &Cpu::IMP, 6 },
-    { 0xD0, "BNE", &Cpu::BNE, &Cpu::REL, 2 },{ 0xD1, "CMP", &Cpu::CMP, &Cpu::IZY, 5 },{ 0xD2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xD3, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0xD4, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0xD5, "CMP", &Cpu::CMP, &Cpu::ZPX, 4 },{ 0xD6, "DEC", &Cpu::DEC, &Cpu::ZPX, 6 },{ 0xD7, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0xD8, "CLD", &Cpu::CLD, &Cpu::IMP, 2 },{ 0xD9, "CMP", &Cpu::CMP, &Cpu::ABY, 4 },{ 0xDA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xDB, "???", &Cpu::XXX, &Cpu::IMP, 7 },{ 0xDC, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0xDD, "CMP", &Cpu::CMP, &Cpu::ABX, 4 },{ 0xDE, "DEC", &Cpu::DEC, &Cpu::ABX, 7 },{ 0xDF, "???", &Cpu::XXX, &Cpu::IMP, 7 },
+    { 0xC0, "CPY", &Cpu::CPY, &Cpu::IMM, 2 },{ 0xC1, "CMP", &Cpu::CMP, &Cpu::IZX, 6 },{ 0xC2, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0xC3, "DCP", &Cpu::DCP, &Cpu::IZX, 8 },{ 0xC4, "CPY", &Cpu::CPY, &Cpu::ZP0, 3 },{ 0xC5, "CMP", &Cpu::CMP, &Cpu::ZP0, 3 },{ 0xC6, "DEC", &Cpu::DEC, &Cpu::ZP0, 5 },{ 0xC7, "DCP", &Cpu::DCP, &Cpu::ZP0, 5 },{ 0xC8, "INY", &Cpu::INY, &Cpu::IMP, 2 },{ 0xC9, "CMP", &Cpu::CMP, &Cpu::IMM, 2 },{ 0xCA, "DEX", &Cpu::DEX, &Cpu::IMP, 2 },{ 0xCB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xCC, "CPY", &Cpu::CPY, &Cpu::ABS, 4 },{ 0xCD, "CMP", &Cpu::CMP, &Cpu::ABS, 4 },{ 0xCE, "DEC", &Cpu::DEC, &Cpu::ABS, 6 },{ 0xCF, "DCP", &Cpu::DCP, &Cpu::ABS, 6 },
+    { 0xD0, "BNE", &Cpu::BNE, &Cpu::REL, 2 },{ 0xD1, "CMP", &Cpu::CMP, &Cpu::IZY, 5 },{ 0xD2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xD3, "DCP", &Cpu::DCP, &Cpu::IZY, 8 },{ 0xD4, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0xD5, "CMP", &Cpu::CMP, &Cpu::ZPX, 4 },{ 0xD6, "DEC", &Cpu::DEC, &Cpu::ZPX, 6 },{ 0xD7, "DCP", &Cpu::DCP, &Cpu::ZPX, 6 },{ 0xD8, "CLD", &Cpu::CLD, &Cpu::IMP, 2 },{ 0xD9, "CMP", &Cpu::CMP, &Cpu::ABY, 4 },{ 0xDA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xDB, "DCP", &Cpu::DCP, &Cpu::ABY, 7 },{ 0xDC, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0xDD, "CMP", &Cpu::CMP, &Cpu::ABX, 4 },{ 0xDE, "DEC", &Cpu::DEC, &Cpu::ABX, 7 },{ 0xDF, "DCP", &Cpu::DCP, &Cpu::ABX, 7 },
     { 0xE0, "CPX", &Cpu::CPX, &Cpu::IMM, 2 },{ 0xE1, "SBC", &Cpu::SBC, &Cpu::IZX, 6 },{ 0xE2, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0xE3, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0xE4, "CPX", &Cpu::CPX, &Cpu::ZP0, 3 },{ 0xE5, "SBC", &Cpu::SBC, &Cpu::ZP0, 3 },{ 0xE6, "INC", &Cpu::INC, &Cpu::ZP0, 5 },{ 0xE7, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0xE8, "INX", &Cpu::INX, &Cpu::IMP, 2 },{ 0xE9, "SBC", &Cpu::SBC, &Cpu::IMM, 2 },{ 0xEA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xEB, "???", &Cpu::SBC, &Cpu::IMP, 2 },{ 0xEC, "CPX", &Cpu::CPX, &Cpu::ABS, 4 },{ 0xED, "SBC", &Cpu::SBC, &Cpu::ABS, 4 },{ 0xEE, "INC", &Cpu::INC, &Cpu::ABS, 6 },{ 0xEF, "???", &Cpu::XXX, &Cpu::IMP, 6 },
     { 0xF0, "BEQ", &Cpu::BEQ, &Cpu::REL, 2 },{ 0xF1, "SBC", &Cpu::SBC, &Cpu::IZY, 5 },{ 0xF2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xF3, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0xF4, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0xF5, "SBC", &Cpu::SBC, &Cpu::ZPX, 4 },{ 0xF6, "INC", &Cpu::INC, &Cpu::ZPX, 6 },{ 0xF7, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0xF8, "SED", &Cpu::SED, &Cpu::IMP, 2 },{ 0xF9, "SBC", &Cpu::SBC, &Cpu::ABY, 4 },{ 0xFA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xFB, "???", &Cpu::XXX, &Cpu::IMP, 7 },{ 0xFC, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0xFD, "SBC", &Cpu::SBC, &Cpu::ABX, 4 },{ 0xFE, "INC", &Cpu::INC, &Cpu::ABX, 7 },{ 0xFF, "???", &Cpu::XXX, &Cpu::IMP, 7 },
   };
@@ -454,7 +455,7 @@ void Cpu::SetFlag(Flags flag, bool setClear)
 // simple, however the 6502 supports the concepts of Negativity/Positivity and Signed Overflow.
 //
 // 10000100 = 128 + 4 = 132 in normal circumstances, we know this as unsigned and it allows
-// us to represent numbers between 0 and 255 (given 8 bits). The 6502 can also interpret 
+// us to represent numbers between 0 and 255 (given 8 bits). The 6502 can also interpret
 // this word as something else if we assume those 8 bits represent the range -128 to +127,
 // i.e. it has become signed.
 //
@@ -463,7 +464,7 @@ void Cpu::SetFlag(Flags flag, bool setClear)
 // gone outside the permissable range, and therefore no longer makes numeric sense.
 //
 // Note the implementation of ADD is the same in binary, this is just about how the numbers
-// are represented, so the word 10000100 can be both -124 and 132 depending upon the 
+// are represented, so the word 10000100 can be both -124 and 132 depending upon the
 // context the programming is using it in. We can prove this!
 //
 //  10000100 =  132  or  -124
@@ -994,6 +995,7 @@ uint8_t Cpu::LDY()
   return 1;
 }
 
+// TODO
 uint8_t Cpu::LSR()
 {
   Fetch();
@@ -1009,6 +1011,7 @@ uint8_t Cpu::LSR()
   return 0;
 }
 
+// TODO
 uint8_t Cpu::NOP()
 {
   return 0;
@@ -1233,6 +1236,7 @@ uint8_t Cpu::TYA()
   return 0;
 }
 
+// TODO
 uint8_t Cpu::LAX()
 {
   Fetch();
@@ -1245,10 +1249,31 @@ uint8_t Cpu::LAX()
   return 0;
 }
 
+// TODO
 uint8_t Cpu::SAX()
 {
   Write(m_addrAbs, m_a & m_x);
   return 0;
+}
+
+// TODO
+// Decrement then ComPare
+uint8_t Cpu::DCP()
+{
+  // DEC
+  Fetch();
+  m_temp = m_fetched - 1;
+  Write(m_addrAbs, m_temp & 0x00FF);
+
+  // CMP
+  Fetch();
+  m_temp = (uint16_t)m_a - (uint16_t)m_fetched;
+
+  SetFlag(C, m_a >= m_fetched);
+  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(N, m_temp & 0x0080);
+
+  return 1;
 }
 
 // This function captures illegal opcodes
