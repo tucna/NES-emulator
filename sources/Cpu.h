@@ -104,7 +104,7 @@ private:
   uint8_t TSX();	uint8_t TXA();	uint8_t TXS();	uint8_t TYA();
 
   // Unofficial opcodes
-  uint8_t LAX();  uint8_t SAX();  uint8_t DCP();
+  uint8_t LAX();  uint8_t SAX();  uint8_t DCP();  uint8_t SRE();
 
   uint8_t XXX();
 
