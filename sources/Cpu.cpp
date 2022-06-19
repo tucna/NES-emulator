@@ -22,8 +22,8 @@ Cpu::Cpu() :
     { 0x30, "BMI", &Cpu::BMI, &Cpu::REL, 2 },{ 0x31, "AND", &Cpu::AND, &Cpu::IZY, 5 },{ 0x32, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x33, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0x34, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x35, "AND", &Cpu::AND, &Cpu::ZPX, 4 },{ 0x36, "ROL", &Cpu::ROL, &Cpu::ZPX, 6 },{ 0x37, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0x38, "SEC", &Cpu::SEC, &Cpu::IMP, 2 },{ 0x39, "AND", &Cpu::AND, &Cpu::ABY, 4 },{ 0x3A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x3B, "???", &Cpu::XXX, &Cpu::IMP, 7 },{ 0x3C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x3D, "AND", &Cpu::AND, &Cpu::ABX, 4 },{ 0x3E, "ROL", &Cpu::ROL, &Cpu::ABX, 7 },{ 0x3F, "???", &Cpu::XXX, &Cpu::IMP, 7 },
     { 0x40, "RTI", &Cpu::RTI, &Cpu::IMP, 6 },{ 0x41, "EOR", &Cpu::EOR, &Cpu::IZX, 6 },{ 0x42, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x43, "SRE", &Cpu::SRE, &Cpu::IZX, 8 },{ 0x44, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x45, "EOR", &Cpu::EOR, &Cpu::ZP0, 3 },{ 0x46, "LSR", &Cpu::LSR, &Cpu::ZP0, 5 },{ 0x47, "SRE", &Cpu::SRE, &Cpu::ZP0, 5 },{ 0x48, "PHA", &Cpu::PHA, &Cpu::IMP, 3 },{ 0x49, "EOR", &Cpu::EOR, &Cpu::IMM, 2 },{ 0x4A, "LSR", &Cpu::LSR, &Cpu::IMP, 2 },{ 0x4B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x4C, "JMP", &Cpu::JMP, &Cpu::ABS, 3 },{ 0x4D, "EOR", &Cpu::EOR, &Cpu::ABS, 4 },{ 0x4E, "LSR", &Cpu::LSR, &Cpu::ABS, 6 },{ 0x4F, "SRE", &Cpu::SRE, &Cpu::ABS, 6 },
     { 0x50, "BVC", &Cpu::BVC, &Cpu::REL, 2 },{ 0x51, "EOR", &Cpu::EOR, &Cpu::IZY, 5 },{ 0x52, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x53, "SRE", &Cpu::SRE, &Cpu::IZY, 8 },{ 0x54, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x55, "EOR", &Cpu::EOR, &Cpu::ZPX, 4 },{ 0x56, "LSR", &Cpu::LSR, &Cpu::ZPX, 6 },{ 0x57, "SRE", &Cpu::SRE, &Cpu::ZPX, 6 },{ 0x58, "CLI", &Cpu::CLI, &Cpu::IMP, 2 },{ 0x59, "EOR", &Cpu::EOR, &Cpu::ABY, 4 },{ 0x5A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x5B, "SRE", &Cpu::SRE, &Cpu::ABY, 7 },{ 0x5C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x5D, "EOR", &Cpu::EOR, &Cpu::ABX, 4 },{ 0x5E, "LSR", &Cpu::LSR, &Cpu::ABX, 7 },{ 0x5F, "SRE", &Cpu::SRE, &Cpu::ABX, 7 },
-    { 0x60, "RTS", &Cpu::RTS, &Cpu::IMP, 6 },{ 0x61, "ADC", &Cpu::ADC, &Cpu::IZX, 6 },{ 0x62, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x63, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0x64, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x65, "ADC", &Cpu::ADC, &Cpu::ZP0, 3 },{ 0x66, "ROR", &Cpu::ROR, &Cpu::ZP0, 5 },{ 0x67, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x68, "PLA", &Cpu::PLA, &Cpu::IMP, 4 },{ 0x69, "ADC", &Cpu::ADC, &Cpu::IMM, 2 },{ 0x6A, "ROR", &Cpu::ROR, &Cpu::IMP, 2 },{ 0x6B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x6C, "JMP", &Cpu::JMP, &Cpu::IND, 5 },{ 0x6D, "ADC", &Cpu::ADC, &Cpu::ABS, 4 },{ 0x6E, "ROR", &Cpu::ROR, &Cpu::ABS, 6 },{ 0x6F, "???", &Cpu::XXX, &Cpu::IMP, 6 },
-    { 0x70, "BVS", &Cpu::BVS, &Cpu::REL, 2 },{ 0x71, "ADC", &Cpu::ADC, &Cpu::IZY, 5 },{ 0x72, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x73, "???", &Cpu::XXX, &Cpu::IMP, 8 },{ 0x74, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x75, "ADC", &Cpu::ADC, &Cpu::ZPX, 4 },{ 0x76, "ROR", &Cpu::ROR, &Cpu::ZPX, 6 },{ 0x77, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0x78, "SEI", &Cpu::SEI, &Cpu::IMP, 2 },{ 0x79, "ADC", &Cpu::ADC, &Cpu::ABY, 4 },{ 0x7A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x7B, "???", &Cpu::XXX, &Cpu::IMP, 7 },{ 0x7C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x7D, "ADC", &Cpu::ADC, &Cpu::ABX, 4 },{ 0x7E, "ROR", &Cpu::ROR, &Cpu::ABX, 7 },{ 0x7F, "???", &Cpu::XXX, &Cpu::IMP, 7 },
+    { 0x60, "RTS", &Cpu::RTS, &Cpu::IMP, 6 },{ 0x61, "ADC", &Cpu::ADC, &Cpu::IZX, 6 },{ 0x62, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x63, "RRA", &Cpu::RRA, &Cpu::IZX, 8 },{ 0x64, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x65, "ADC", &Cpu::ADC, &Cpu::ZP0, 3 },{ 0x66, "ROR", &Cpu::ROR, &Cpu::ZP0, 5 },{ 0x67, "RRA", &Cpu::RRA, &Cpu::ZP0, 5 },{ 0x68, "PLA", &Cpu::PLA, &Cpu::IMP, 4 },{ 0x69, "ADC", &Cpu::ADC, &Cpu::IMM, 2 },{ 0x6A, "ROR", &Cpu::ROR, &Cpu::IMP, 2 },{ 0x6B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x6C, "JMP", &Cpu::JMP, &Cpu::IND, 5 },{ 0x6D, "ADC", &Cpu::ADC, &Cpu::ABS, 4 },{ 0x6E, "ROR", &Cpu::ROR, &Cpu::ABS, 6 },{ 0x6F, "RRA", &Cpu::RRA, &Cpu::ABS, 6 },
+    { 0x70, "BVS", &Cpu::BVS, &Cpu::REL, 2 },{ 0x71, "ADC", &Cpu::ADC, &Cpu::IZY, 5 },{ 0x72, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x73, "RRA", &Cpu::RRA, &Cpu::IZY, 8 },{ 0x74, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x75, "ADC", &Cpu::ADC, &Cpu::ZPX, 4 },{ 0x76, "ROR", &Cpu::ROR, &Cpu::ZPX, 6 },{ 0x77, "RRA", &Cpu::RRA, &Cpu::ZPX, 6 },{ 0x78, "SEI", &Cpu::SEI, &Cpu::IMP, 2 },{ 0x79, "ADC", &Cpu::ADC, &Cpu::ABY, 4 },{ 0x7A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x7B, "RRA", &Cpu::RRA, &Cpu::ABY, 7 },{ 0x7C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x7D, "ADC", &Cpu::ADC, &Cpu::ABX, 4 },{ 0x7E, "ROR", &Cpu::ROR, &Cpu::ABX, 7 },{ 0x7F, "RRA", &Cpu::RRA, &Cpu::ABX, 7 },
     { 0x80, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x81, "STA", &Cpu::STA, &Cpu::IZX, 6 },{ 0x82, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x83, "SAX", &Cpu::SAX, &Cpu::IZX, 6 },{ 0x84, "STY", &Cpu::STY, &Cpu::ZP0, 3 },{ 0x85, "STA", &Cpu::STA, &Cpu::ZP0, 3 },{ 0x86, "STX", &Cpu::STX, &Cpu::ZP0, 3 },{ 0x87, "SAX", &Cpu::SAX, &Cpu::ZP0, 3 },{ 0x88, "DEY", &Cpu::DEY, &Cpu::IMP, 2 },{ 0x89, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x8A, "TXA", &Cpu::TXA, &Cpu::IMP, 2 },{ 0x8B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x8C, "STY", &Cpu::STY, &Cpu::ABS, 4 },{ 0x8D, "STA", &Cpu::STA, &Cpu::ABS, 4 },{ 0x8E, "STX", &Cpu::STX, &Cpu::ABS, 4 },{ 0x8F, "SAX", &Cpu::SAX, &Cpu::ABS, 4 },
     { 0x90, "BCC", &Cpu::BCC, &Cpu::REL, 2 },{ 0x91, "STA", &Cpu::STA, &Cpu::IZY, 6 },{ 0x92, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x93, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0x94, "STY", &Cpu::STY, &Cpu::ZPX, 4 },{ 0x95, "STA", &Cpu::STA, &Cpu::ZPX, 4 },{ 0x96, "STX", &Cpu::STX, &Cpu::ZPY, 4 },{ 0x97, "SAX", &Cpu::SAX, &Cpu::ZPY, 4 },{ 0x98, "TYA", &Cpu::TYA, &Cpu::IMP, 2 },{ 0x99, "STA", &Cpu::STA, &Cpu::ABY, 5 },{ 0x9A, "TXS", &Cpu::TXS, &Cpu::IMP, 2 },{ 0x9B, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9C, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9D, "STA", &Cpu::STA, &Cpu::ABX, 5 },{ 0x9E, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9F, "???", &Cpu::XXX, &Cpu::IMP, 5 },
     { 0xA0, "LDY", &Cpu::LDY, &Cpu::IMM, 2 },{ 0xA1, "LDA", &Cpu::LDA, &Cpu::IZX, 6 },{ 0xA2, "LDX", &Cpu::LDX, &Cpu::IMM, 2 },{ 0xA3, "LAX", &Cpu::LAX, &Cpu::IZX, 6 },{ 0xA4, "LDY", &Cpu::LDY, &Cpu::ZP0, 3 },{ 0xA5, "LDA", &Cpu::LDA, &Cpu::ZP0, 3 },{ 0xA6, "LDX", &Cpu::LDX, &Cpu::ZP0, 3 },{ 0xA7, "LAX", &Cpu::LAX, &Cpu::ZP0, 3 },{ 0xA8, "TAY", &Cpu::TAY, &Cpu::IMP, 2 },{ 0xA9, "LDA", &Cpu::LDA, &Cpu::IMM, 2 },{ 0xAA, "TAX", &Cpu::TAX, &Cpu::IMP, 2 },{ 0xAB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xAC, "LDY", &Cpu::LDY, &Cpu::ABS, 4 },{ 0xAD, "LDA", &Cpu::LDA, &Cpu::ABS, 4 },{ 0xAE, "LDX", &Cpu::LDX, &Cpu::ABS, 4 },{ 0xAF, "LAX", &Cpu::LAX, &Cpu::ABS, 4 },
@@ -1296,6 +1296,33 @@ uint8_t Cpu::SRE()
 
   SetFlag(Z, m_a == 0x00);
   SetFlag(N, m_a & 0x80);
+
+  return 1;
+}
+
+// TODO
+// Rotate the value Right, then Add w/ carry flag to the accumulator
+uint8_t Cpu::RRA()
+{
+  // ROR
+  Fetch();
+  m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
+  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+    m_a = m_temp & 0x00FF;
+  else
+    Write(m_addrAbs, m_temp & 0x00FF);
+
+  SetFlag(C, m_fetched & 0x01);
+
+  // ADC
+  Fetch();
+  m_temp = (uint16_t)m_a + (uint16_t)m_fetched + (uint16_t)GetFlag(C);
+  SetFlag(C, m_temp > 255);
+  SetFlag(Z, (m_temp & 0x00FF) == 0);
+  SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & 0x0080);
+  SetFlag(N, m_temp & 0x80);
+
+  m_a = m_temp & 0x00FF;
 
   return 1;
 }
