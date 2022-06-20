@@ -105,7 +105,7 @@ private:
 
   // Unofficial opcodes
   uint8_t LAX();  uint8_t SAX();  uint8_t DCP();  uint8_t SRE();
-  uint8_t RRA();  uint8_t RLA();
+  uint8_t RRA();  uint8_t RLA();  uint8_t ISC();
 
   uint8_t XXX();
 
