@@ -15,7 +15,7 @@ NES::NES() :
   m_bus->ConnectPpu(m_ppu.get());
   m_bus->ConnectRam(&m_ram);
 
-  InsertCartridge("roms/nestest.nes");
+  InsertCartridge("roms/cpu/nestest.nes");
 }
 
 void NES::Clock()
