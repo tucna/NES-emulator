@@ -42,19 +42,20 @@ public:
   Mirror GetMirroring() { return m_mirror; }
 
 private:
-  bool m_imageValid;
+  bool m_imageValid = false;
+  bool m_debugCartridge = false;
 
-  uint8_t m_mapperID;
+  uint8_t m_mapperID = 0;
   uint8_t m_PRGBanks = 0;
   uint8_t m_CHRBanks = 0;
 
-  Mirror m_mirror;
+  Mirror m_mirror = Mirror::Horizontal;
 
   std::vector<uint8_t> m_PRGMemory;
   std::vector<uint8_t> m_CHRMemory;
 
   std::unique_ptr<Mapper> m_mapper;
 
-  Bus* m_bus;
+  Bus* m_bus = nullptr;
 };
 

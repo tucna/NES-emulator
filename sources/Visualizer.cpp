@@ -89,19 +89,26 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   controller |= GetKey(tDX::Key::LEFT).bHeld ? 0x02 : 0x00;
   controller |= GetKey(tDX::Key::RIGHT).bHeld ? 0x01 : 0x00;
 
+  if (GetKey(tDX::Key::SPACE).bPressed) m_paused = !m_paused;
   if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
+  if (GetKey(tDX::Key::NP2).bPressed) m_oneStep = true;
 
   Cpu& cpu = m_nes->GetCpu();
   Ppu& ppu = m_nes->GetPpu();
 
-  if (m_residualTime > 0.0f)
+  if (!m_paused || m_oneStep)
   {
-    m_residualTime -= fElapsedTime;
-  }
-  else
-  {
-    m_residualTime += (1.0f / 60.0f) - fElapsedTime;
-    do { m_nes->Clock(); } while (!ppu.IsFrameCompleted());
+    if (m_residualTime > 0.0f)
+    {
+      m_residualTime -= fElapsedTime;
+    }
+    else
+    {
+      m_residualTime += (1.0f / 60.0f) - fElapsedTime;
+      do { m_nes->Clock(); if (cpu.IsCompleted()) break; } while (!ppu.IsFrameCompleted());
+      m_oneStep = false;
+      m_residualTime = 0.0f;
+    }
   }
 
   DrawSprite(0, 0, &ppu.GetScreen(), 2);
@@ -172,6 +179,29 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Separator();
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
+  ImGui::End();
+
+  char page[3] = "00";
+
+  ImGui::Begin("Memory window 1");
+  //ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", page, 3, ImGuiInputTextFlags_CharsHexadecimal);
+
+  for (int row = 0; row < 16; row++)
+  {
+    stringstream memoryRow;
+    memoryRow << "$" << std::hex << page[0] << std::hex << page[1] << std::hex << row << "0" << ":";
+
+    ImGui::Text(memoryRow.str().c_str());
+
+    memoryRow.str(std::string());
+
+    for (int column = 0; column < 16; column++)
+      memoryRow << "00 ";
+
+    ImGui::SameLine();
+    ImGui::TextColored(m_darkGrayColor, memoryRow.str().c_str());
+  }
+
   ImGui::End();
 
   tDX::Sprite& sprite1 = m_nes->GetPpu().GetPatternTable(0, 0);

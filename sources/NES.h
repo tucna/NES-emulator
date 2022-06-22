@@ -29,9 +29,10 @@ public:
 
 private:
   void InsertCartridge(const std::string& file);
+  void InsertDebugCartridge();
 
   // Hardware
-  std::array<uint8_t, 2 * 1024> m_ram; // std::array<uint8_t, 2 * 1024> could be typedef
+  std::array<uint8_t, 2 * 1024> m_ram; // TODO std::array<uint8_t, 2 * 1024> could be typedef
 
   std::unique_ptr<Bus> m_bus;
   std::unique_ptr<Cpu> m_cpu;

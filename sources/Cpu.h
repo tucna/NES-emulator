@@ -66,6 +66,8 @@ public:
 
   uint16_t GetProgramCounter() const { return m_programCounter; }
 
+  void SetProgramCounter(uint16_t programCounter) { m_programCounter = programCounter; }
+
 private:
   enum Flags
   {

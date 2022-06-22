@@ -15,7 +15,9 @@ NES::NES() :
   m_bus->ConnectPpu(m_ppu.get());
   m_bus->ConnectRam(&m_ram);
 
-  InsertCartridge("roms/cpu/nestest.nes");
+  //InsertCartridge("roms/cpu/nestest.nes");
+  InsertDebugCartridge();
+
 }
 
 void NES::Clock()
@@ -54,4 +56,18 @@ void NES::InsertCartridge(const std::string& file)
 
   // Reset
   m_cpu->Reset();
+}
+
+void NES::InsertDebugCartridge()
+{
+  // Load the cartridge
+  m_cartridge = std::make_unique<Cartridge>("");
+  m_bus->ConnectCartridge(m_cartridge.get());
+  m_ppu->ConnectCartridge(m_cartridge.get());
+
+  // Extract dissassembly
+  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+
+  // Set program to start from cartridge address
+  m_cpu->SetProgramCounter(0x4020);
 }

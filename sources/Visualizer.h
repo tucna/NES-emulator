@@ -37,4 +37,6 @@ private:
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP2;
 
   bool m_showUI;
+  bool m_paused = true;
+  bool m_oneStep = false;
 };
