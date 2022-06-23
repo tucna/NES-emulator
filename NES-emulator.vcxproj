@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="sources\CPU.cpp" />
     <ClCompile Include="sources\Oscillator.cpp" />
     <ClCompile Include="sources\Mapper_000.cpp" />
     <ClCompile Include="sources\Cartridge.cpp" />
@@ -135,12 +136,14 @@
     <ClCompile Include="sources\imgui\imgui_widgets.cpp" />
     <ClCompile Include="sources\Main.cpp" />
     <ClCompile Include="sources\Emulator.cpp" />
+    <ClCompile Include="sources\PPU.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="sources\engine\ps.cso" />
     <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sources\CPU.h" />
     <ClInclude Include="sources\Oscillator.h" />
     <ClInclude Include="sources\Mapper_000.h" />
     <ClInclude Include="sources\Mapper.h" />
@@ -156,6 +159,7 @@
     <ClInclude Include="sources\imgui\imstb_textedit.h" />
     <ClInclude Include="sources\imgui\imstb_truetype.h" />
     <ClInclude Include="sources\Emulator.h" />
+    <ClInclude Include="sources\PPU.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
