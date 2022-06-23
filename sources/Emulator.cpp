@@ -4,18 +4,11 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
 
-#include "NES.h"
-#include "Visualizer.h"
+#include "Emulator.h"
 
 using namespace std;
 
-Visualizer::Visualizer(NES* nes) :
-  m_nes(nes),
-  m_redColor(1, 0, 0, 1),
-  m_greenColor(0, 1, 0, 1),
-  m_darkGrayColor(0.6f, 0.6f, 0.6f, 1),
-  m_residualTime(0),
-  m_showUI(false)
+Emulator::Emulator()
 {
   sAppName = "NES_Emulator";
 
@@ -25,11 +18,27 @@ Visualizer::Visualizer(NES* nes) :
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  if (Construct(500, 480, 1, 1))
-    Start();
+  // Create NES console
+  m_bus = make_unique<Bus>();
+  m_cpu = make_unique<Cpu>();
+  m_ppu = make_unique<Ppu>();
+
+  m_bus->ConnectCpu(m_cpu.get());
+  m_bus->ConnectPpu(m_ppu.get());
+  m_bus->ConnectRam(&m_ram);
+
+  // Create oscillator and coonect with CPU and PPU
+  m_oscillator = make_unique<Oscillator>(m_cpu.get(), m_ppu.get());
+
+  InsertCartridge("roms/cpu/nestest.nes");
+  //InsertDebugCartridge();
 }
 
-bool Visualizer::OnUserCreate()
+Emulator::~Emulator()
+{
+}
+
+bool Emulator::OnUserCreate()
 {
   // Setup Platform/Renderer bindings
   ImGui_ImplWin32_Init(GetHWND());
@@ -50,7 +59,7 @@ bool Visualizer::OnUserCreate()
   desc.CPUAccessFlags = 0;
 
   D3D11_SUBRESOURCE_DATA subResource = {};
-  subResource.pSysMem = m_nes->GetPpu().GetPatternTable(0, 0).GetData();
+  subResource.pSysMem = m_ppu->GetPatternTable(0, 0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP1);
@@ -64,7 +73,7 @@ bool Visualizer::OnUserCreate()
   d3dDevice->CreateShaderResourceView(m_textureP1.Get(), &srvDesc, &m_patternTable1View);
 
   subResource = {};
-  subResource.pSysMem = m_nes->GetPpu().GetPatternTable(1, 0).GetData();
+  subResource.pSysMem = m_ppu->GetPatternTable(1, 0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP2);
@@ -73,11 +82,10 @@ bool Visualizer::OnUserCreate()
   return true;
 }
 
-bool Visualizer::OnUserUpdate(float fElapsedTime)
+bool Emulator::OnUserUpdate(float fElapsedTime)
 {
-  Clear(tDX::BLACK);
-
-  uint8_t& controller = m_nes->GetContr();
+  // Handle controller
+  uint8_t& controller = GetContr();
 
   controller = 0x00;
   controller |= GetKey(tDX::Key::X).bHeld ? 0x80 : 0x00;
@@ -89,34 +97,23 @@ bool Visualizer::OnUserUpdate(float fElapsedTime)
   controller |= GetKey(tDX::Key::LEFT).bHeld ? 0x02 : 0x00;
   controller |= GetKey(tDX::Key::RIGHT).bHeld ? 0x01 : 0x00;
 
+  // Handle debug
   if (GetKey(tDX::Key::SPACE).bPressed) m_paused = !m_paused;
   if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
   if (GetKey(tDX::Key::NP2).bPressed) m_oneStep = true;
 
-  Cpu& cpu = m_nes->GetCpu();
-  Ppu& ppu = m_nes->GetPpu();
+  // Handle hardware
+  m_oscillator->Input(fElapsedTime);
 
-  if (!m_paused || m_oneStep)
-  {
-    if (m_residualTime > 0.0f)
-    {
-      m_residualTime -= fElapsedTime;
-    }
-    else
-    {
-      m_residualTime += (1.0f / 60.0f) - fElapsedTime;
-      do { m_nes->Clock(); if (cpu.IsCompleted()) break; } while (!ppu.IsFrameCompleted());
-      m_oneStep = false;
-      m_residualTime = 0.0f;
-    }
-  }
+  // Handle output to television
+  Clear(tDX::BLACK);
 
-  DrawSprite(0, 0, &ppu.GetScreen(), 2);
+  DrawSprite(0, 0, &TelevisionOutput(), 2);
 
   return true;
 }
 
-bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
+bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 {
   if (!m_showUI)
     return true;
@@ -137,7 +134,7 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
     return s;
   };
 
-  const Cpu& cpu = m_nes->GetCpu();
+  const Cpu& cpu = GetCpu();
 
   // Start the Dear ImGui frame
   ImGui_ImplDX11_NewFrame();
@@ -204,10 +201,10 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
 
   ImGui::End();
 
-  tDX::Sprite& sprite1 = m_nes->GetPpu().GetPatternTable(0, 0);
+  tDX::Sprite& sprite1 = GetPpu().GetPatternTable(0, 0);
   GetContext()->UpdateSubresource(m_textureP1.Get(), 0, NULL, sprite1.GetData(), sprite1.width * 4, 0);
 
-  tDX::Sprite& sprite2 = m_nes->GetPpu().GetPatternTable(1, 0);
+  tDX::Sprite& sprite2 = GetPpu().GetPatternTable(1, 0);
   GetContext()->UpdateSubresource(m_textureP2.Get(), 0, NULL, sprite2.GetData(), sprite2.width * 4, 0);
 
   ImGui::Begin("Pattern table");
@@ -220,7 +217,7 @@ bool Visualizer::OnUserUpdateEndFrame(float fElapsedTime)
   return true;
 }
 
-bool Visualizer::OnUserDestroy()
+bool Emulator::OnUserDestroy()
 {
   ImGui_ImplDX11_Shutdown();
   ImGui_ImplWin32_Shutdown();
@@ -229,12 +226,12 @@ bool Visualizer::OnUserDestroy()
   return true;
 }
 
-void Visualizer::PrepareDisassembledCode(uint8_t lines)
+void Emulator::PrepareDisassembledCode(uint8_t lines)
 {
   m_disassembledCode.clear();
 
-  const Cpu& cpu = m_nes->GetCpu();
-  const std::map<uint16_t, std::string>& assembly = m_nes->GetAssembly();
+  const Cpu& cpu = GetCpu();
+  const std::map<uint16_t, std::string>& assembly = GetAssembly();
 
   auto it = assembly.find(cpu.GetProgramCounter());
 
@@ -250,4 +247,38 @@ void Visualizer::PrepareDisassembledCode(uint8_t lines)
         m_disassembledCode.push_back((*it).second);
     }
   }
+}
+
+void Emulator::InsertCartridge(const std::string & file)
+{
+  // Load the cartridge
+  m_cartridge = std::make_unique<Cartridge>(file);
+  m_bus->ConnectCartridge(m_cartridge.get());
+  m_ppu->ConnectCartridge(m_cartridge.get());
+
+  if (!m_cartridge->IsImageValid())
+  {
+    // TODO
+    return;
+  }
+
+  // Extract dissassembly
+  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+
+  // Reset
+  m_cpu->Reset();
+}
+
+void Emulator::InsertDebugCartridge()
+{
+  // Load the cartridge
+  m_cartridge = std::make_unique<Cartridge>("");
+  m_bus->ConnectCartridge(m_cartridge.get());
+  m_ppu->ConnectCartridge(m_cartridge.get());
+
+  // Extract dissassembly
+  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+
+  // Set program to start from cartridge address
+  m_cpu->SetProgramCounter(0x4020);
 }

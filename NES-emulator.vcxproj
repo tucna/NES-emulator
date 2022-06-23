@@ -123,32 +123,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="sources\Ppu.cpp" />
+    <ClCompile Include="sources\Oscillator.cpp" />
+    <ClCompile Include="sources\PPU.cpp" />
     <ClCompile Include="sources\Mapper_000.cpp" />
     <ClCompile Include="sources\Cartridge.cpp" />
     <ClCompile Include="sources\Bus.cpp" />
-    <ClCompile Include="sources\Cpu.cpp" />
+    <ClCompile Include="sources\CPU.cpp" />
     <ClCompile Include="sources\imgui\imgui.cpp" />
     <ClCompile Include="sources\imgui\imgui_demo.cpp" />
     <ClCompile Include="sources\imgui\imgui_draw.cpp" />
     <ClCompile Include="sources\imgui\imgui_impl_dx11.cpp" />
     <ClCompile Include="sources\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="sources\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="sources\NES.cpp" />
     <ClCompile Include="sources\Main.cpp" />
-    <ClCompile Include="sources\Visualizer.cpp" />
+    <ClCompile Include="sources\Emulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="sources\engine\ps.cso" />
     <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sources\Ppu.h" />
+    <ClInclude Include="sources\Oscillator.h" />
+    <ClInclude Include="sources\PPU.h" />
     <ClInclude Include="sources\Mapper_000.h" />
     <ClInclude Include="sources\Mapper.h" />
     <ClInclude Include="sources\Cartridge.h" />
     <ClInclude Include="sources\Bus.h" />
-    <ClInclude Include="sources\Cpu.h" />
+    <ClInclude Include="sources\CPU.h" />
     <ClInclude Include="sources\engine\tPixelGameEngine.h" />
     <ClInclude Include="sources\imgui\imconfig.h" />
     <ClInclude Include="sources\imgui\imgui.h" />
@@ -158,8 +159,7 @@
     <ClInclude Include="sources\imgui\imstb_rectpack.h" />
     <ClInclude Include="sources\imgui\imstb_textedit.h" />
     <ClInclude Include="sources\imgui\imstb_truetype.h" />
-    <ClInclude Include="sources\NES.h" />
-    <ClInclude Include="sources\Visualizer.h" />
+    <ClInclude Include="sources\Emulator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
