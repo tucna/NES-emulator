@@ -1,8 +1,8 @@
 #include "Bus.h"
 #include "Cartridge.h"
-#include "Ppu.h"
+#include "PPU.h"
 
-Ppu::Ppu() :
+PPU::PPU() :
   m_frameComplete(false),
   m_cycle(0),
   m_scanline(0),
@@ -82,7 +82,7 @@ Ppu::Ppu() :
   m_palScreen[0x3F] = tDX::Pixel(0, 0, 0);
 }
 
-void Ppu::Clock()
+void PPU::Clock()
 {
   auto IncrementScrollX = [&]()
   {
@@ -280,12 +280,12 @@ void Ppu::Clock()
   }
 }
 
-void Ppu::ConnectCartridge(Cartridge * cartridge)
+void PPU::ConnectCartridge(Cartridge * cartridge)
 {
   m_cartridge = cartridge;
 }
 
-tDX::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
+tDX::Sprite& PPU::GetPatternTable(uint8_t i, uint8_t palette)
 {
   for (uint16_t nTileY = 0; nTileY < 16; nTileY++)
   {
@@ -319,7 +319,7 @@ tDX::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
   return m_sprPatternTable[i];
 }
 
-uint8_t Ppu::ReadByCPU(uint16_t addr, bool rdonly)
+uint8_t PPU::ReadByCPU(uint16_t addr, bool rdonly)
 {
   uint8_t data = 0x00;
 
@@ -397,7 +397,7 @@ uint8_t Ppu::ReadByCPU(uint16_t addr, bool rdonly)
   return data;
 }
 
-void Ppu::WriteByCPU(uint16_t addr, uint8_t data)
+void PPU::WriteByCPU(uint16_t addr, uint8_t data)
 {
   switch (addr)
   {
@@ -449,7 +449,7 @@ void Ppu::WriteByCPU(uint16_t addr, uint8_t data)
   }
 }
 
-uint8_t Ppu::ReadByPPU(uint16_t addr, bool rdonly)
+uint8_t PPU::ReadByPPU(uint16_t addr, bool rdonly)
 {
   uint8_t data = 0x00;
   addr &= 0x3FFF;
@@ -500,7 +500,7 @@ uint8_t Ppu::ReadByPPU(uint16_t addr, bool rdonly)
   return data;
 }
 
-void Ppu::WriteByPPU(uint16_t addr, uint8_t data)
+void PPU::WriteByPPU(uint16_t addr, uint8_t data)
 {
   addr &= 0x3FFF;
 
@@ -547,7 +547,7 @@ void Ppu::WriteByPPU(uint16_t addr, uint8_t data)
   }
 }
 
-tDX::Pixel& Ppu::GetColourFromPaletteRam(uint8_t palette, uint8_t pixel)
+tDX::Pixel& PPU::GetColourFromPaletteRam(uint8_t palette, uint8_t pixel)
 {
   return m_palScreen[ReadByPPU(0x3F00 + (palette << 2) + pixel) & 0x3F];
 }

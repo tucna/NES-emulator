@@ -1,8 +1,8 @@
-#include "Cpu.h"
+#include "CPU.h"
 #include "Oscillator.h"
-#include "Ppu.h"
+#include "PPU.h"
 
-Oscillator::Oscillator(Cpu* cpu, Ppu* ppu) :
+Oscillator::Oscillator(CPU* cpu, PPU* ppu) :
   m_cpu(cpu),
   m_ppu(ppu)
 {

@@ -2,14 +2,14 @@
 
 #include <cstdint>
 
-class Cpu; // TODO rename to CPU and PPU
-class Ppu;
+class CPU; // TODO rename to CPU and PPU
+class PPU;
 
 // Hardware to generate clock signal
 class Oscillator
 {
 public:
-  Oscillator(Cpu* cpu, Ppu* ppu);
+  Oscillator(CPU* cpu, PPU* ppu);
   ~Oscillator();
 
   void Input(float timeStep);
@@ -17,8 +17,8 @@ public:
 private:
   void Tick();
 
-  Cpu* m_cpu;
-  Ppu* m_ppu;
+  CPU* m_cpu;
+  PPU* m_ppu;
 
   float m_residualTime = 0;
 

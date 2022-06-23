@@ -8,8 +8,8 @@
 #include <array>
 
 class Cartridge;
-class Cpu;
-class Ppu;
+class CPU;
+class PPU;
 
 class Bus
 {
@@ -21,8 +21,8 @@ public:
   uint8_t Read(uint16_t addr, bool bReadOnly = false);
 
   void ConnectRam(std::array<uint8_t, 2 * 1024>* ram);
-  void ConnectCpu(Cpu* cpu);
-  void ConnectPpu(Ppu* ppu);
+  void ConnectCpu(CPU* cpu);
+  void ConnectPPU(PPU* ppu);
   void ConnectCartridge(Cartridge* cartridge);
 
   uint8_t& GetController1() { return m_controller[0]; }
@@ -35,8 +35,8 @@ private:
   uint8_t m_controller[2];
   uint8_t m_controllerState[2];
 
-  Cpu* m_cpu;
-  Ppu* m_ppu;
+  CPU* m_cpu;
+  PPU* m_ppu;
   Cartridge* m_cartridge;
 };
 

@@ -20,18 +20,46 @@ Emulator::Emulator()
 
   // Create NES console
   m_bus = make_unique<Bus>();
-  m_cpu = make_unique<Cpu>();
-  m_ppu = make_unique<Ppu>();
+  m_cpu = make_unique<CPU>();
+  m_ppu = make_unique<PPU>();
 
   m_bus->ConnectCpu(m_cpu.get());
-  m_bus->ConnectPpu(m_ppu.get());
+  m_bus->ConnectPPU(m_ppu.get());
   m_bus->ConnectRam(&m_ram);
 
   // Create oscillator and coonect with CPU and PPU
   m_oscillator = make_unique<Oscillator>(m_cpu.get(), m_ppu.get());
 
-  InsertCartridge("roms/cpu/nestest.nes");
-  //InsertDebugCartridge();
+  // Create cartridge
+  {
+    m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
+
+    // Startup routine
+    if (!m_cartridge->IsImageValid())
+    {
+      // TODO
+    }
+
+    m_bus->ConnectCartridge(m_cartridge.get());
+    m_ppu->ConnectCartridge(m_cartridge.get());
+
+    // Reset
+    m_cpu->Reset();
+  }
+  /*
+  {
+    m_cartridge = std::make_unique<Cartridge>("");
+
+    m_bus->ConnectCartridge(m_cartridge.get());
+    m_ppu->ConnectCartridge(m_cartridge.get());
+
+    // Set PC for cartridge
+    m_cpu->SetProgramCounter(0x4020);
+  }
+  */
+
+  // Extract dissassembly
+  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
 }
 
 Emulator::~Emulator()
@@ -85,7 +113,7 @@ bool Emulator::OnUserCreate()
 bool Emulator::OnUserUpdate(float fElapsedTime)
 {
   // Handle controller
-  uint8_t& controller = GetContr();
+  uint8_t& controller = m_bus->GetController1();
 
   controller = 0x00;
   controller |= GetKey(tDX::Key::X).bHeld ? 0x80 : 0x00;
@@ -107,8 +135,7 @@ bool Emulator::OnUserUpdate(float fElapsedTime)
 
   // Handle output to television
   Clear(tDX::BLACK);
-
-  DrawSprite(0, 0, &TelevisionOutput(), 2);
+  DrawSprite(0, 0, &m_ppu->GetScreen(), 2);
 
   return true;
 }
@@ -134,32 +161,30 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
     return s;
   };
 
-  const Cpu& cpu = GetCpu();
-
   // Start the Dear ImGui frame
   ImGui_ImplDX11_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
 
-  string formatAcc = hex(cpu.GetAcc(), 2) + " [" + std::to_string(cpu.GetAcc()) + "]";
-  string formatX = hex(cpu.GetRegX(), 2) + " [" + std::to_string(cpu.GetRegX()) + "]";
-  string formatY = hex(cpu.GetRegY(), 2) + " [" + std::to_string(cpu.GetRegY()) + "]";
+  string formatAcc = hex(m_cpu->GetAcc(), 2) + " [" + std::to_string(m_cpu->GetAcc()) + "]";
+  string formatX = hex(m_cpu->GetRegX(), 2) + " [" + std::to_string(m_cpu->GetRegX()) + "]";
+  string formatY = hex(m_cpu->GetRegY(), 2) + " [" + std::to_string(m_cpu->GetRegY()) + "]";
 
   ImGui::Begin("CPU information");
   ImGui::Text("Bits");
-  ImGui::Text("0 : Carry bit"); ImGui::SameLine(); print(cpu.GetB0());
-  ImGui::Text("1 : Zero"); ImGui::SameLine(); print(cpu.GetB1());
-  ImGui::Text("2 : Disable Interrupts"); ImGui::SameLine(); print(cpu.GetB2());
-  ImGui::Text("3 : Decimal Mode"); ImGui::SameLine(); print(cpu.GetB3());
-  ImGui::Text("4 : Break"); ImGui::SameLine(); print(cpu.GetB4());
+  ImGui::Text("0 : Carry bit"); ImGui::SameLine(); print(m_cpu->GetB0());
+  ImGui::Text("1 : Zero"); ImGui::SameLine(); print(m_cpu->GetB1());
+  ImGui::Text("2 : Disable Interrupts"); ImGui::SameLine(); print(m_cpu->GetB2());
+  ImGui::Text("3 : Decimal Mode"); ImGui::SameLine(); print(m_cpu->GetB3());
+  ImGui::Text("4 : Break"); ImGui::SameLine(); print(m_cpu->GetB4());
   ImGui::Text("5 : UNUSED");
-  ImGui::Text("6 : Overflow"); ImGui::SameLine(); print(cpu.GetB6());
-  ImGui::Text("7 : Negative"); ImGui::SameLine(); print(cpu.GetB7());
+  ImGui::Text("6 : Overflow"); ImGui::SameLine(); print(m_cpu->GetB6());
+  ImGui::Text("7 : Negative"); ImGui::SameLine(); print(m_cpu->GetB7());
   ImGui::Separator();
   ImGui::Columns(2);
   ImGui::SetColumnWidth(0, 120);
-  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(cpu.GetProgramCounter(), 4).data()); ImGui::NextColumn();
-  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(cpu.GetStakPointer(), 4).data()); ImGui::NextColumn();
+  ImGui::Text("Program counter"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(m_cpu->GetProgramCounter(), 4).data()); ImGui::NextColumn();
+  ImGui::Text("Stack pointer"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, hex(m_cpu->GetStakPointer(), 4).data()); ImGui::NextColumn();
   ImGui::Text("Accumulator"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatAcc.data()); ImGui::NextColumn();
   ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatX.data()); ImGui::NextColumn();
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
@@ -182,7 +207,6 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 
   ImGui::Begin("Memory window 1");
   //ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", page, 3, ImGuiInputTextFlags_CharsHexadecimal);
-
   for (int row = 0; row < 16; row++)
   {
     stringstream memoryRow;
@@ -198,13 +222,12 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
     ImGui::SameLine();
     ImGui::TextColored(m_darkGrayColor, memoryRow.str().c_str());
   }
-
   ImGui::End();
 
-  tDX::Sprite& sprite1 = GetPpu().GetPatternTable(0, 0);
+  tDX::Sprite& sprite1 = m_ppu->GetPatternTable(0, 0);
   GetContext()->UpdateSubresource(m_textureP1.Get(), 0, NULL, sprite1.GetData(), sprite1.width * 4, 0);
 
-  tDX::Sprite& sprite2 = GetPpu().GetPatternTable(1, 0);
+  tDX::Sprite& sprite2 = m_ppu->GetPatternTable(1, 0);
   GetContext()->UpdateSubresource(m_textureP2.Get(), 0, NULL, sprite2.GetData(), sprite2.width * 4, 0);
 
   ImGui::Begin("Pattern table");
@@ -230,55 +253,18 @@ void Emulator::PrepareDisassembledCode(uint8_t lines)
 {
   m_disassembledCode.clear();
 
-  const Cpu& cpu = GetCpu();
-  const std::map<uint16_t, std::string>& assembly = GetAssembly();
-
-  auto it = assembly.find(cpu.GetProgramCounter());
+  auto it = m_asm.find(m_cpu->GetProgramCounter());
 
   advance(it, -lines);
 
-  if (it != assembly.end())
+  if (it != m_asm.end())
   {
     m_disassembledCode.push_back((*it).second);
 
     for (int i = 0; i < lines * 2; i++)
     {
-      if (++it != assembly.end())
+      if (++it != m_asm.end())
         m_disassembledCode.push_back((*it).second);
     }
   }
-}
-
-void Emulator::InsertCartridge(const std::string & file)
-{
-  // Load the cartridge
-  m_cartridge = std::make_unique<Cartridge>(file);
-  m_bus->ConnectCartridge(m_cartridge.get());
-  m_ppu->ConnectCartridge(m_cartridge.get());
-
-  if (!m_cartridge->IsImageValid())
-  {
-    // TODO
-    return;
-  }
-
-  // Extract dissassembly
-  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
-
-  // Reset
-  m_cpu->Reset();
-}
-
-void Emulator::InsertDebugCartridge()
-{
-  // Load the cartridge
-  m_cartridge = std::make_unique<Cartridge>("");
-  m_bus->ConnectCartridge(m_cartridge.get());
-  m_ppu->ConnectCartridge(m_cartridge.get());
-
-  // Extract dissassembly
-  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
-
-  // Set program to start from cartridge address
-  m_cpu->SetProgramCounter(0x4020);
 }

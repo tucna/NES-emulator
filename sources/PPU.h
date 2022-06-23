@@ -25,11 +25,11 @@ class Cartridge;
 
 // NES uses 2C02
 // Class covers PPU and its bus
-class Ppu
+class PPU
 {
 public:
-  Ppu();
-  ~Ppu() {}
+  PPU();
+  ~PPU() {}
 
   void Clock();
 

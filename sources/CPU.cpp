@@ -1,7 +1,7 @@
 #include "Bus.h"
-#include "Cpu.h"
+#include "CPU.h"
 
-Cpu::Cpu() :
+CPU::CPU() :
   m_bus(nullptr),
   m_status(0),
   m_fetched(0),
@@ -16,26 +16,26 @@ Cpu::Cpu() :
   // {opcode, mnemonic, function pointer, address mode pointer, number clock cycles}
   m_lookup =
   {
-    { 0x00, "BRK", &Cpu::BRK, &Cpu::IMM, 7 },{ 0x01, "ORA", &Cpu::ORA, &Cpu::IZX, 6 },{ 0x02, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x03, "SLO", &Cpu::SLO, &Cpu::IZX, 8 },{ 0x04, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x05, "ORA", &Cpu::ORA, &Cpu::ZP0, 3 },{ 0x06, "ASL", &Cpu::ASL, &Cpu::ZP0, 5 },{ 0x07, "SLO", &Cpu::SLO, &Cpu::ZP0, 5 },{ 0x08, "PHP", &Cpu::PHP, &Cpu::IMP, 3 },{ 0x09, "ORA", &Cpu::ORA, &Cpu::IMM, 2 },{ 0x0A, "ASL", &Cpu::ASL, &Cpu::IMP, 2 },{ 0x0B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x0C, "NOP", &Cpu::NOP, &Cpu::ABS, 4 },{ 0x0D, "ORA", &Cpu::ORA, &Cpu::ABS, 4 },{ 0x0E, "ASL", &Cpu::ASL, &Cpu::ABS, 6 },{ 0x0F, "SLO", &Cpu::SLO, &Cpu::ABS, 6 },
-    { 0x10, "BPL", &Cpu::BPL, &Cpu::REL, 2 },{ 0x11, "ORA", &Cpu::ORA, &Cpu::IZY, 5 },{ 0x12, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x13, "SLO", &Cpu::SLO, &Cpu::IZY, 8 },{ 0x14, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x15, "ORA", &Cpu::ORA, &Cpu::ZPX, 4 },{ 0x16, "ASL", &Cpu::ASL, &Cpu::ZPX, 6 },{ 0x17, "SLO", &Cpu::SLO, &Cpu::ZPX, 6 },{ 0x18, "CLC", &Cpu::CLC, &Cpu::IMP, 2 },{ 0x19, "ORA", &Cpu::ORA, &Cpu::ABY, 4 },{ 0x1A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x1B, "SLO", &Cpu::SLO, &Cpu::ABY, 7 },{ 0x1C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x1D, "ORA", &Cpu::ORA, &Cpu::ABX, 4 },{ 0x1E, "ASL", &Cpu::ASL, &Cpu::ABX, 7 },{ 0x1F, "SLO", &Cpu::SLO, &Cpu::ABX, 7 },
-    { 0x20, "JSR", &Cpu::JSR, &Cpu::ABS, 6 },{ 0x21, "AND", &Cpu::AND, &Cpu::IZX, 6 },{ 0x22, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x23, "RLA", &Cpu::RLA, &Cpu::IZX, 8 },{ 0x24, "BIT", &Cpu::BIT, &Cpu::ZP0, 3 },{ 0x25, "AND", &Cpu::AND, &Cpu::ZP0, 3 },{ 0x26, "ROL", &Cpu::ROL, &Cpu::ZP0, 5 },{ 0x27, "RLA", &Cpu::RLA, &Cpu::ZP0, 5 },{ 0x28, "PLP", &Cpu::PLP, &Cpu::IMP, 4 },{ 0x29, "AND", &Cpu::AND, &Cpu::IMM, 2 },{ 0x2A, "ROL", &Cpu::ROL, &Cpu::IMP, 2 },{ 0x2B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x2C, "BIT", &Cpu::BIT, &Cpu::ABS, 4 },{ 0x2D, "AND", &Cpu::AND, &Cpu::ABS, 4 },{ 0x2E, "ROL", &Cpu::ROL, &Cpu::ABS, 6 },{ 0x2F, "RLA", &Cpu::RLA, &Cpu::ABS, 6 },
-    { 0x30, "BMI", &Cpu::BMI, &Cpu::REL, 2 },{ 0x31, "AND", &Cpu::AND, &Cpu::IZY, 5 },{ 0x32, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x33, "RLA", &Cpu::RLA, &Cpu::IZY, 8 },{ 0x34, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x35, "AND", &Cpu::AND, &Cpu::ZPX, 4 },{ 0x36, "ROL", &Cpu::ROL, &Cpu::ZPX, 6 },{ 0x37, "RLA", &Cpu::RLA, &Cpu::ZPX, 6 },{ 0x38, "SEC", &Cpu::SEC, &Cpu::IMP, 2 },{ 0x39, "AND", &Cpu::AND, &Cpu::ABY, 4 },{ 0x3A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x3B, "RLA", &Cpu::RLA, &Cpu::ABY, 7 },{ 0x3C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x3D, "AND", &Cpu::AND, &Cpu::ABX, 4 },{ 0x3E, "ROL", &Cpu::ROL, &Cpu::ABX, 7 },{ 0x3F, "RLA", &Cpu::RLA, &Cpu::ABX, 7 },
-    { 0x40, "RTI", &Cpu::RTI, &Cpu::IMP, 6 },{ 0x41, "EOR", &Cpu::EOR, &Cpu::IZX, 6 },{ 0x42, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x43, "SRE", &Cpu::SRE, &Cpu::IZX, 8 },{ 0x44, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x45, "EOR", &Cpu::EOR, &Cpu::ZP0, 3 },{ 0x46, "LSR", &Cpu::LSR, &Cpu::ZP0, 5 },{ 0x47, "SRE", &Cpu::SRE, &Cpu::ZP0, 5 },{ 0x48, "PHA", &Cpu::PHA, &Cpu::IMP, 3 },{ 0x49, "EOR", &Cpu::EOR, &Cpu::IMM, 2 },{ 0x4A, "LSR", &Cpu::LSR, &Cpu::IMP, 2 },{ 0x4B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x4C, "JMP", &Cpu::JMP, &Cpu::ABS, 3 },{ 0x4D, "EOR", &Cpu::EOR, &Cpu::ABS, 4 },{ 0x4E, "LSR", &Cpu::LSR, &Cpu::ABS, 6 },{ 0x4F, "SRE", &Cpu::SRE, &Cpu::ABS, 6 },
-    { 0x50, "BVC", &Cpu::BVC, &Cpu::REL, 2 },{ 0x51, "EOR", &Cpu::EOR, &Cpu::IZY, 5 },{ 0x52, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x53, "SRE", &Cpu::SRE, &Cpu::IZY, 8 },{ 0x54, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x55, "EOR", &Cpu::EOR, &Cpu::ZPX, 4 },{ 0x56, "LSR", &Cpu::LSR, &Cpu::ZPX, 6 },{ 0x57, "SRE", &Cpu::SRE, &Cpu::ZPX, 6 },{ 0x58, "CLI", &Cpu::CLI, &Cpu::IMP, 2 },{ 0x59, "EOR", &Cpu::EOR, &Cpu::ABY, 4 },{ 0x5A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x5B, "SRE", &Cpu::SRE, &Cpu::ABY, 7 },{ 0x5C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x5D, "EOR", &Cpu::EOR, &Cpu::ABX, 4 },{ 0x5E, "LSR", &Cpu::LSR, &Cpu::ABX, 7 },{ 0x5F, "SRE", &Cpu::SRE, &Cpu::ABX, 7 },
-    { 0x60, "RTS", &Cpu::RTS, &Cpu::IMP, 6 },{ 0x61, "ADC", &Cpu::ADC, &Cpu::IZX, 6 },{ 0x62, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x63, "RRA", &Cpu::RRA, &Cpu::IZX, 8 },{ 0x64, "NOP", &Cpu::NOP, &Cpu::ZP0, 3 },{ 0x65, "ADC", &Cpu::ADC, &Cpu::ZP0, 3 },{ 0x66, "ROR", &Cpu::ROR, &Cpu::ZP0, 5 },{ 0x67, "RRA", &Cpu::RRA, &Cpu::ZP0, 5 },{ 0x68, "PLA", &Cpu::PLA, &Cpu::IMP, 4 },{ 0x69, "ADC", &Cpu::ADC, &Cpu::IMM, 2 },{ 0x6A, "ROR", &Cpu::ROR, &Cpu::IMP, 2 },{ 0x6B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x6C, "JMP", &Cpu::JMP, &Cpu::IND, 5 },{ 0x6D, "ADC", &Cpu::ADC, &Cpu::ABS, 4 },{ 0x6E, "ROR", &Cpu::ROR, &Cpu::ABS, 6 },{ 0x6F, "RRA", &Cpu::RRA, &Cpu::ABS, 6 },
-    { 0x70, "BVS", &Cpu::BVS, &Cpu::REL, 2 },{ 0x71, "ADC", &Cpu::ADC, &Cpu::IZY, 5 },{ 0x72, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x73, "RRA", &Cpu::RRA, &Cpu::IZY, 8 },{ 0x74, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0x75, "ADC", &Cpu::ADC, &Cpu::ZPX, 4 },{ 0x76, "ROR", &Cpu::ROR, &Cpu::ZPX, 6 },{ 0x77, "RRA", &Cpu::RRA, &Cpu::ZPX, 6 },{ 0x78, "SEI", &Cpu::SEI, &Cpu::IMP, 2 },{ 0x79, "ADC", &Cpu::ADC, &Cpu::ABY, 4 },{ 0x7A, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0x7B, "RRA", &Cpu::RRA, &Cpu::ABY, 7 },{ 0x7C, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0x7D, "ADC", &Cpu::ADC, &Cpu::ABX, 4 },{ 0x7E, "ROR", &Cpu::ROR, &Cpu::ABX, 7 },{ 0x7F, "RRA", &Cpu::RRA, &Cpu::ABX, 7 },
-    { 0x80, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x81, "STA", &Cpu::STA, &Cpu::IZX, 6 },{ 0x82, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x83, "SAX", &Cpu::SAX, &Cpu::IZX, 6 },{ 0x84, "STY", &Cpu::STY, &Cpu::ZP0, 3 },{ 0x85, "STA", &Cpu::STA, &Cpu::ZP0, 3 },{ 0x86, "STX", &Cpu::STX, &Cpu::ZP0, 3 },{ 0x87, "SAX", &Cpu::SAX, &Cpu::ZP0, 3 },{ 0x88, "DEY", &Cpu::DEY, &Cpu::IMP, 2 },{ 0x89, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0x8A, "TXA", &Cpu::TXA, &Cpu::IMP, 2 },{ 0x8B, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x8C, "STY", &Cpu::STY, &Cpu::ABS, 4 },{ 0x8D, "STA", &Cpu::STA, &Cpu::ABS, 4 },{ 0x8E, "STX", &Cpu::STX, &Cpu::ABS, 4 },{ 0x8F, "SAX", &Cpu::SAX, &Cpu::ABS, 4 },
-    { 0x90, "BCC", &Cpu::BCC, &Cpu::REL, 2 },{ 0x91, "STA", &Cpu::STA, &Cpu::IZY, 6 },{ 0x92, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0x93, "???", &Cpu::XXX, &Cpu::IMP, 6 },{ 0x94, "STY", &Cpu::STY, &Cpu::ZPX, 4 },{ 0x95, "STA", &Cpu::STA, &Cpu::ZPX, 4 },{ 0x96, "STX", &Cpu::STX, &Cpu::ZPY, 4 },{ 0x97, "SAX", &Cpu::SAX, &Cpu::ZPY, 4 },{ 0x98, "TYA", &Cpu::TYA, &Cpu::IMP, 2 },{ 0x99, "STA", &Cpu::STA, &Cpu::ABY, 5 },{ 0x9A, "TXS", &Cpu::TXS, &Cpu::IMP, 2 },{ 0x9B, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9C, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9D, "STA", &Cpu::STA, &Cpu::ABX, 5 },{ 0x9E, "???", &Cpu::XXX, &Cpu::IMP, 5 },{ 0x9F, "???", &Cpu::XXX, &Cpu::IMP, 5 },
-    { 0xA0, "LDY", &Cpu::LDY, &Cpu::IMM, 2 },{ 0xA1, "LDA", &Cpu::LDA, &Cpu::IZX, 6 },{ 0xA2, "LDX", &Cpu::LDX, &Cpu::IMM, 2 },{ 0xA3, "LAX", &Cpu::LAX, &Cpu::IZX, 6 },{ 0xA4, "LDY", &Cpu::LDY, &Cpu::ZP0, 3 },{ 0xA5, "LDA", &Cpu::LDA, &Cpu::ZP0, 3 },{ 0xA6, "LDX", &Cpu::LDX, &Cpu::ZP0, 3 },{ 0xA7, "LAX", &Cpu::LAX, &Cpu::ZP0, 3 },{ 0xA8, "TAY", &Cpu::TAY, &Cpu::IMP, 2 },{ 0xA9, "LDA", &Cpu::LDA, &Cpu::IMM, 2 },{ 0xAA, "TAX", &Cpu::TAX, &Cpu::IMP, 2 },{ 0xAB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xAC, "LDY", &Cpu::LDY, &Cpu::ABS, 4 },{ 0xAD, "LDA", &Cpu::LDA, &Cpu::ABS, 4 },{ 0xAE, "LDX", &Cpu::LDX, &Cpu::ABS, 4 },{ 0xAF, "LAX", &Cpu::LAX, &Cpu::ABS, 4 },
-    { 0xB0, "BCS", &Cpu::BCS, &Cpu::REL, 2 },{ 0xB1, "LDA", &Cpu::LDA, &Cpu::IZY, 5 },{ 0xB2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xB3, "LAX", &Cpu::LAX, &Cpu::IZY, 5 },{ 0xB4, "LDY", &Cpu::LDY, &Cpu::ZPX, 4 },{ 0xB5, "LDA", &Cpu::LDA, &Cpu::ZPX, 4 },{ 0xB6, "LDX", &Cpu::LDX, &Cpu::ZPY, 4 },{ 0xB7, "LAX", &Cpu::LAX, &Cpu::ZPY, 4 },{ 0xB8, "CLV", &Cpu::CLV, &Cpu::IMP, 2 },{ 0xB9, "LDA", &Cpu::LDA, &Cpu::ABY, 4 },{ 0xBA, "TSX", &Cpu::TSX, &Cpu::IMP, 2 },{ 0xBB, "???", &Cpu::XXX, &Cpu::IMP, 4 },{ 0xBC, "LDY", &Cpu::LDY, &Cpu::ABX, 4 },{ 0xBD, "LDA", &Cpu::LDA, &Cpu::ABX, 4 },{ 0xBE, "LDX", &Cpu::LDX, &Cpu::ABY, 4 },{ 0xBF, "LAX", &Cpu::LAX, &Cpu::ABY, 4 },
-    { 0xC0, "CPY", &Cpu::CPY, &Cpu::IMM, 2 },{ 0xC1, "CMP", &Cpu::CMP, &Cpu::IZX, 6 },{ 0xC2, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0xC3, "DCP", &Cpu::DCP, &Cpu::IZX, 8 },{ 0xC4, "CPY", &Cpu::CPY, &Cpu::ZP0, 3 },{ 0xC5, "CMP", &Cpu::CMP, &Cpu::ZP0, 3 },{ 0xC6, "DEC", &Cpu::DEC, &Cpu::ZP0, 5 },{ 0xC7, "DCP", &Cpu::DCP, &Cpu::ZP0, 5 },{ 0xC8, "INY", &Cpu::INY, &Cpu::IMP, 2 },{ 0xC9, "CMP", &Cpu::CMP, &Cpu::IMM, 2 },{ 0xCA, "DEX", &Cpu::DEX, &Cpu::IMP, 2 },{ 0xCB, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xCC, "CPY", &Cpu::CPY, &Cpu::ABS, 4 },{ 0xCD, "CMP", &Cpu::CMP, &Cpu::ABS, 4 },{ 0xCE, "DEC", &Cpu::DEC, &Cpu::ABS, 6 },{ 0xCF, "DCP", &Cpu::DCP, &Cpu::ABS, 6 },
-    { 0xD0, "BNE", &Cpu::BNE, &Cpu::REL, 2 },{ 0xD1, "CMP", &Cpu::CMP, &Cpu::IZY, 5 },{ 0xD2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xD3, "DCP", &Cpu::DCP, &Cpu::IZY, 8 },{ 0xD4, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0xD5, "CMP", &Cpu::CMP, &Cpu::ZPX, 4 },{ 0xD6, "DEC", &Cpu::DEC, &Cpu::ZPX, 6 },{ 0xD7, "DCP", &Cpu::DCP, &Cpu::ZPX, 6 },{ 0xD8, "CLD", &Cpu::CLD, &Cpu::IMP, 2 },{ 0xD9, "CMP", &Cpu::CMP, &Cpu::ABY, 4 },{ 0xDA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xDB, "DCP", &Cpu::DCP, &Cpu::ABY, 7 },{ 0xDC, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0xDD, "CMP", &Cpu::CMP, &Cpu::ABX, 4 },{ 0xDE, "DEC", &Cpu::DEC, &Cpu::ABX, 7 },{ 0xDF, "DCP", &Cpu::DCP, &Cpu::ABX, 7 },
-    { 0xE0, "CPX", &Cpu::CPX, &Cpu::IMM, 2 },{ 0xE1, "SBC", &Cpu::SBC, &Cpu::IZX, 6 },{ 0xE2, "NOP", &Cpu::NOP, &Cpu::IMM, 2 },{ 0xE3, "ISC", &Cpu::ISC, &Cpu::IZX, 8 },{ 0xE4, "CPX", &Cpu::CPX, &Cpu::ZP0, 3 },{ 0xE5, "SBC", &Cpu::SBC, &Cpu::ZP0, 3 },{ 0xE6, "INC", &Cpu::INC, &Cpu::ZP0, 5 },{ 0xE7, "ISC", &Cpu::ISC, &Cpu::ZP0, 5 },{ 0xE8, "INX", &Cpu::INX, &Cpu::IMP, 2 },{ 0xE9, "SBC", &Cpu::SBC, &Cpu::IMM, 2 },{ 0xEA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xEB, "SBC", &Cpu::SBC, &Cpu::IMM, 2 },{ 0xEC, "CPX", &Cpu::CPX, &Cpu::ABS, 4 },{ 0xED, "SBC", &Cpu::SBC, &Cpu::ABS, 4 },{ 0xEE, "INC", &Cpu::INC, &Cpu::ABS, 6 },{ 0xEF, "ISC", &Cpu::ISC, &Cpu::ABS, 6 },
-    { 0xF0, "BEQ", &Cpu::BEQ, &Cpu::REL, 2 },{ 0xF1, "SBC", &Cpu::SBC, &Cpu::IZY, 5 },{ 0xF2, "???", &Cpu::XXX, &Cpu::IMP, 2 },{ 0xF3, "ISC", &Cpu::ISC, &Cpu::IZY, 8 },{ 0xF4, "NOP", &Cpu::NOP, &Cpu::ZPX, 4 },{ 0xF5, "SBC", &Cpu::SBC, &Cpu::ZPX, 4 },{ 0xF6, "INC", &Cpu::INC, &Cpu::ZPX, 6 },{ 0xF7, "ISC", &Cpu::ISC, &Cpu::ZPX, 6 },{ 0xF8, "SED", &Cpu::SED, &Cpu::IMP, 2 },{ 0xF9, "SBC", &Cpu::SBC, &Cpu::ABY, 4 },{ 0xFA, "NOP", &Cpu::NOP, &Cpu::IMP, 2 },{ 0xFB, "ISC", &Cpu::ISC, &Cpu::ABY, 7 },{ 0xFC, "NOP", &Cpu::NOP, &Cpu::ABX, 4 },{ 0xFD, "SBC", &Cpu::SBC, &Cpu::ABX, 4 },{ 0xFE, "INC", &Cpu::INC, &Cpu::ABX, 7 },{ 0xFF, "ISC", &Cpu::ISC, &Cpu::ABX, 7 },
+    { 0x00, "BRK", &CPU::BRK, &CPU::IMM, 7 },{ 0x01, "ORA", &CPU::ORA, &CPU::IZX, 6 },{ 0x02, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x03, "SLO", &CPU::SLO, &CPU::IZX, 8 },{ 0x04, "NOP", &CPU::NOP, &CPU::ZP0, 3 },{ 0x05, "ORA", &CPU::ORA, &CPU::ZP0, 3 },{ 0x06, "ASL", &CPU::ASL, &CPU::ZP0, 5 },{ 0x07, "SLO", &CPU::SLO, &CPU::ZP0, 5 },{ 0x08, "PHP", &CPU::PHP, &CPU::IMP, 3 },{ 0x09, "ORA", &CPU::ORA, &CPU::IMM, 2 },{ 0x0A, "ASL", &CPU::ASL, &CPU::IMP, 2 },{ 0x0B, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x0C, "NOP", &CPU::NOP, &CPU::ABS, 4 },{ 0x0D, "ORA", &CPU::ORA, &CPU::ABS, 4 },{ 0x0E, "ASL", &CPU::ASL, &CPU::ABS, 6 },{ 0x0F, "SLO", &CPU::SLO, &CPU::ABS, 6 },
+    { 0x10, "BPL", &CPU::BPL, &CPU::REL, 2 },{ 0x11, "ORA", &CPU::ORA, &CPU::IZY, 5 },{ 0x12, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x13, "SLO", &CPU::SLO, &CPU::IZY, 8 },{ 0x14, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0x15, "ORA", &CPU::ORA, &CPU::ZPX, 4 },{ 0x16, "ASL", &CPU::ASL, &CPU::ZPX, 6 },{ 0x17, "SLO", &CPU::SLO, &CPU::ZPX, 6 },{ 0x18, "CLC", &CPU::CLC, &CPU::IMP, 2 },{ 0x19, "ORA", &CPU::ORA, &CPU::ABY, 4 },{ 0x1A, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0x1B, "SLO", &CPU::SLO, &CPU::ABY, 7 },{ 0x1C, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0x1D, "ORA", &CPU::ORA, &CPU::ABX, 4 },{ 0x1E, "ASL", &CPU::ASL, &CPU::ABX, 7 },{ 0x1F, "SLO", &CPU::SLO, &CPU::ABX, 7 },
+    { 0x20, "JSR", &CPU::JSR, &CPU::ABS, 6 },{ 0x21, "AND", &CPU::AND, &CPU::IZX, 6 },{ 0x22, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x23, "RLA", &CPU::RLA, &CPU::IZX, 8 },{ 0x24, "BIT", &CPU::BIT, &CPU::ZP0, 3 },{ 0x25, "AND", &CPU::AND, &CPU::ZP0, 3 },{ 0x26, "ROL", &CPU::ROL, &CPU::ZP0, 5 },{ 0x27, "RLA", &CPU::RLA, &CPU::ZP0, 5 },{ 0x28, "PLP", &CPU::PLP, &CPU::IMP, 4 },{ 0x29, "AND", &CPU::AND, &CPU::IMM, 2 },{ 0x2A, "ROL", &CPU::ROL, &CPU::IMP, 2 },{ 0x2B, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x2C, "BIT", &CPU::BIT, &CPU::ABS, 4 },{ 0x2D, "AND", &CPU::AND, &CPU::ABS, 4 },{ 0x2E, "ROL", &CPU::ROL, &CPU::ABS, 6 },{ 0x2F, "RLA", &CPU::RLA, &CPU::ABS, 6 },
+    { 0x30, "BMI", &CPU::BMI, &CPU::REL, 2 },{ 0x31, "AND", &CPU::AND, &CPU::IZY, 5 },{ 0x32, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x33, "RLA", &CPU::RLA, &CPU::IZY, 8 },{ 0x34, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0x35, "AND", &CPU::AND, &CPU::ZPX, 4 },{ 0x36, "ROL", &CPU::ROL, &CPU::ZPX, 6 },{ 0x37, "RLA", &CPU::RLA, &CPU::ZPX, 6 },{ 0x38, "SEC", &CPU::SEC, &CPU::IMP, 2 },{ 0x39, "AND", &CPU::AND, &CPU::ABY, 4 },{ 0x3A, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0x3B, "RLA", &CPU::RLA, &CPU::ABY, 7 },{ 0x3C, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0x3D, "AND", &CPU::AND, &CPU::ABX, 4 },{ 0x3E, "ROL", &CPU::ROL, &CPU::ABX, 7 },{ 0x3F, "RLA", &CPU::RLA, &CPU::ABX, 7 },
+    { 0x40, "RTI", &CPU::RTI, &CPU::IMP, 6 },{ 0x41, "EOR", &CPU::EOR, &CPU::IZX, 6 },{ 0x42, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x43, "SRE", &CPU::SRE, &CPU::IZX, 8 },{ 0x44, "NOP", &CPU::NOP, &CPU::ZP0, 3 },{ 0x45, "EOR", &CPU::EOR, &CPU::ZP0, 3 },{ 0x46, "LSR", &CPU::LSR, &CPU::ZP0, 5 },{ 0x47, "SRE", &CPU::SRE, &CPU::ZP0, 5 },{ 0x48, "PHA", &CPU::PHA, &CPU::IMP, 3 },{ 0x49, "EOR", &CPU::EOR, &CPU::IMM, 2 },{ 0x4A, "LSR", &CPU::LSR, &CPU::IMP, 2 },{ 0x4B, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x4C, "JMP", &CPU::JMP, &CPU::ABS, 3 },{ 0x4D, "EOR", &CPU::EOR, &CPU::ABS, 4 },{ 0x4E, "LSR", &CPU::LSR, &CPU::ABS, 6 },{ 0x4F, "SRE", &CPU::SRE, &CPU::ABS, 6 },
+    { 0x50, "BVC", &CPU::BVC, &CPU::REL, 2 },{ 0x51, "EOR", &CPU::EOR, &CPU::IZY, 5 },{ 0x52, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x53, "SRE", &CPU::SRE, &CPU::IZY, 8 },{ 0x54, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0x55, "EOR", &CPU::EOR, &CPU::ZPX, 4 },{ 0x56, "LSR", &CPU::LSR, &CPU::ZPX, 6 },{ 0x57, "SRE", &CPU::SRE, &CPU::ZPX, 6 },{ 0x58, "CLI", &CPU::CLI, &CPU::IMP, 2 },{ 0x59, "EOR", &CPU::EOR, &CPU::ABY, 4 },{ 0x5A, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0x5B, "SRE", &CPU::SRE, &CPU::ABY, 7 },{ 0x5C, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0x5D, "EOR", &CPU::EOR, &CPU::ABX, 4 },{ 0x5E, "LSR", &CPU::LSR, &CPU::ABX, 7 },{ 0x5F, "SRE", &CPU::SRE, &CPU::ABX, 7 },
+    { 0x60, "RTS", &CPU::RTS, &CPU::IMP, 6 },{ 0x61, "ADC", &CPU::ADC, &CPU::IZX, 6 },{ 0x62, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x63, "RRA", &CPU::RRA, &CPU::IZX, 8 },{ 0x64, "NOP", &CPU::NOP, &CPU::ZP0, 3 },{ 0x65, "ADC", &CPU::ADC, &CPU::ZP0, 3 },{ 0x66, "ROR", &CPU::ROR, &CPU::ZP0, 5 },{ 0x67, "RRA", &CPU::RRA, &CPU::ZP0, 5 },{ 0x68, "PLA", &CPU::PLA, &CPU::IMP, 4 },{ 0x69, "ADC", &CPU::ADC, &CPU::IMM, 2 },{ 0x6A, "ROR", &CPU::ROR, &CPU::IMP, 2 },{ 0x6B, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x6C, "JMP", &CPU::JMP, &CPU::IND, 5 },{ 0x6D, "ADC", &CPU::ADC, &CPU::ABS, 4 },{ 0x6E, "ROR", &CPU::ROR, &CPU::ABS, 6 },{ 0x6F, "RRA", &CPU::RRA, &CPU::ABS, 6 },
+    { 0x70, "BVS", &CPU::BVS, &CPU::REL, 2 },{ 0x71, "ADC", &CPU::ADC, &CPU::IZY, 5 },{ 0x72, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x73, "RRA", &CPU::RRA, &CPU::IZY, 8 },{ 0x74, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0x75, "ADC", &CPU::ADC, &CPU::ZPX, 4 },{ 0x76, "ROR", &CPU::ROR, &CPU::ZPX, 6 },{ 0x77, "RRA", &CPU::RRA, &CPU::ZPX, 6 },{ 0x78, "SEI", &CPU::SEI, &CPU::IMP, 2 },{ 0x79, "ADC", &CPU::ADC, &CPU::ABY, 4 },{ 0x7A, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0x7B, "RRA", &CPU::RRA, &CPU::ABY, 7 },{ 0x7C, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0x7D, "ADC", &CPU::ADC, &CPU::ABX, 4 },{ 0x7E, "ROR", &CPU::ROR, &CPU::ABX, 7 },{ 0x7F, "RRA", &CPU::RRA, &CPU::ABX, 7 },
+    { 0x80, "NOP", &CPU::NOP, &CPU::IMM, 2 },{ 0x81, "STA", &CPU::STA, &CPU::IZX, 6 },{ 0x82, "NOP", &CPU::NOP, &CPU::IMM, 2 },{ 0x83, "SAX", &CPU::SAX, &CPU::IZX, 6 },{ 0x84, "STY", &CPU::STY, &CPU::ZP0, 3 },{ 0x85, "STA", &CPU::STA, &CPU::ZP0, 3 },{ 0x86, "STX", &CPU::STX, &CPU::ZP0, 3 },{ 0x87, "SAX", &CPU::SAX, &CPU::ZP0, 3 },{ 0x88, "DEY", &CPU::DEY, &CPU::IMP, 2 },{ 0x89, "NOP", &CPU::NOP, &CPU::IMM, 2 },{ 0x8A, "TXA", &CPU::TXA, &CPU::IMP, 2 },{ 0x8B, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x8C, "STY", &CPU::STY, &CPU::ABS, 4 },{ 0x8D, "STA", &CPU::STA, &CPU::ABS, 4 },{ 0x8E, "STX", &CPU::STX, &CPU::ABS, 4 },{ 0x8F, "SAX", &CPU::SAX, &CPU::ABS, 4 },
+    { 0x90, "BCC", &CPU::BCC, &CPU::REL, 2 },{ 0x91, "STA", &CPU::STA, &CPU::IZY, 6 },{ 0x92, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0x93, "???", &CPU::XXX, &CPU::IMP, 6 },{ 0x94, "STY", &CPU::STY, &CPU::ZPX, 4 },{ 0x95, "STA", &CPU::STA, &CPU::ZPX, 4 },{ 0x96, "STX", &CPU::STX, &CPU::ZPY, 4 },{ 0x97, "SAX", &CPU::SAX, &CPU::ZPY, 4 },{ 0x98, "TYA", &CPU::TYA, &CPU::IMP, 2 },{ 0x99, "STA", &CPU::STA, &CPU::ABY, 5 },{ 0x9A, "TXS", &CPU::TXS, &CPU::IMP, 2 },{ 0x9B, "???", &CPU::XXX, &CPU::IMP, 5 },{ 0x9C, "???", &CPU::XXX, &CPU::IMP, 5 },{ 0x9D, "STA", &CPU::STA, &CPU::ABX, 5 },{ 0x9E, "???", &CPU::XXX, &CPU::IMP, 5 },{ 0x9F, "???", &CPU::XXX, &CPU::IMP, 5 },
+    { 0xA0, "LDY", &CPU::LDY, &CPU::IMM, 2 },{ 0xA1, "LDA", &CPU::LDA, &CPU::IZX, 6 },{ 0xA2, "LDX", &CPU::LDX, &CPU::IMM, 2 },{ 0xA3, "LAX", &CPU::LAX, &CPU::IZX, 6 },{ 0xA4, "LDY", &CPU::LDY, &CPU::ZP0, 3 },{ 0xA5, "LDA", &CPU::LDA, &CPU::ZP0, 3 },{ 0xA6, "LDX", &CPU::LDX, &CPU::ZP0, 3 },{ 0xA7, "LAX", &CPU::LAX, &CPU::ZP0, 3 },{ 0xA8, "TAY", &CPU::TAY, &CPU::IMP, 2 },{ 0xA9, "LDA", &CPU::LDA, &CPU::IMM, 2 },{ 0xAA, "TAX", &CPU::TAX, &CPU::IMP, 2 },{ 0xAB, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0xAC, "LDY", &CPU::LDY, &CPU::ABS, 4 },{ 0xAD, "LDA", &CPU::LDA, &CPU::ABS, 4 },{ 0xAE, "LDX", &CPU::LDX, &CPU::ABS, 4 },{ 0xAF, "LAX", &CPU::LAX, &CPU::ABS, 4 },
+    { 0xB0, "BCS", &CPU::BCS, &CPU::REL, 2 },{ 0xB1, "LDA", &CPU::LDA, &CPU::IZY, 5 },{ 0xB2, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0xB3, "LAX", &CPU::LAX, &CPU::IZY, 5 },{ 0xB4, "LDY", &CPU::LDY, &CPU::ZPX, 4 },{ 0xB5, "LDA", &CPU::LDA, &CPU::ZPX, 4 },{ 0xB6, "LDX", &CPU::LDX, &CPU::ZPY, 4 },{ 0xB7, "LAX", &CPU::LAX, &CPU::ZPY, 4 },{ 0xB8, "CLV", &CPU::CLV, &CPU::IMP, 2 },{ 0xB9, "LDA", &CPU::LDA, &CPU::ABY, 4 },{ 0xBA, "TSX", &CPU::TSX, &CPU::IMP, 2 },{ 0xBB, "???", &CPU::XXX, &CPU::IMP, 4 },{ 0xBC, "LDY", &CPU::LDY, &CPU::ABX, 4 },{ 0xBD, "LDA", &CPU::LDA, &CPU::ABX, 4 },{ 0xBE, "LDX", &CPU::LDX, &CPU::ABY, 4 },{ 0xBF, "LAX", &CPU::LAX, &CPU::ABY, 4 },
+    { 0xC0, "CPY", &CPU::CPY, &CPU::IMM, 2 },{ 0xC1, "CMP", &CPU::CMP, &CPU::IZX, 6 },{ 0xC2, "NOP", &CPU::NOP, &CPU::IMM, 2 },{ 0xC3, "DCP", &CPU::DCP, &CPU::IZX, 8 },{ 0xC4, "CPY", &CPU::CPY, &CPU::ZP0, 3 },{ 0xC5, "CMP", &CPU::CMP, &CPU::ZP0, 3 },{ 0xC6, "DEC", &CPU::DEC, &CPU::ZP0, 5 },{ 0xC7, "DCP", &CPU::DCP, &CPU::ZP0, 5 },{ 0xC8, "INY", &CPU::INY, &CPU::IMP, 2 },{ 0xC9, "CMP", &CPU::CMP, &CPU::IMM, 2 },{ 0xCA, "DEX", &CPU::DEX, &CPU::IMP, 2 },{ 0xCB, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0xCC, "CPY", &CPU::CPY, &CPU::ABS, 4 },{ 0xCD, "CMP", &CPU::CMP, &CPU::ABS, 4 },{ 0xCE, "DEC", &CPU::DEC, &CPU::ABS, 6 },{ 0xCF, "DCP", &CPU::DCP, &CPU::ABS, 6 },
+    { 0xD0, "BNE", &CPU::BNE, &CPU::REL, 2 },{ 0xD1, "CMP", &CPU::CMP, &CPU::IZY, 5 },{ 0xD2, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0xD3, "DCP", &CPU::DCP, &CPU::IZY, 8 },{ 0xD4, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0xD5, "CMP", &CPU::CMP, &CPU::ZPX, 4 },{ 0xD6, "DEC", &CPU::DEC, &CPU::ZPX, 6 },{ 0xD7, "DCP", &CPU::DCP, &CPU::ZPX, 6 },{ 0xD8, "CLD", &CPU::CLD, &CPU::IMP, 2 },{ 0xD9, "CMP", &CPU::CMP, &CPU::ABY, 4 },{ 0xDA, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0xDB, "DCP", &CPU::DCP, &CPU::ABY, 7 },{ 0xDC, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0xDD, "CMP", &CPU::CMP, &CPU::ABX, 4 },{ 0xDE, "DEC", &CPU::DEC, &CPU::ABX, 7 },{ 0xDF, "DCP", &CPU::DCP, &CPU::ABX, 7 },
+    { 0xE0, "CPX", &CPU::CPX, &CPU::IMM, 2 },{ 0xE1, "SBC", &CPU::SBC, &CPU::IZX, 6 },{ 0xE2, "NOP", &CPU::NOP, &CPU::IMM, 2 },{ 0xE3, "ISC", &CPU::ISC, &CPU::IZX, 8 },{ 0xE4, "CPX", &CPU::CPX, &CPU::ZP0, 3 },{ 0xE5, "SBC", &CPU::SBC, &CPU::ZP0, 3 },{ 0xE6, "INC", &CPU::INC, &CPU::ZP0, 5 },{ 0xE7, "ISC", &CPU::ISC, &CPU::ZP0, 5 },{ 0xE8, "INX", &CPU::INX, &CPU::IMP, 2 },{ 0xE9, "SBC", &CPU::SBC, &CPU::IMM, 2 },{ 0xEA, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0xEB, "SBC", &CPU::SBC, &CPU::IMM, 2 },{ 0xEC, "CPX", &CPU::CPX, &CPU::ABS, 4 },{ 0xED, "SBC", &CPU::SBC, &CPU::ABS, 4 },{ 0xEE, "INC", &CPU::INC, &CPU::ABS, 6 },{ 0xEF, "ISC", &CPU::ISC, &CPU::ABS, 6 },
+    { 0xF0, "BEQ", &CPU::BEQ, &CPU::REL, 2 },{ 0xF1, "SBC", &CPU::SBC, &CPU::IZY, 5 },{ 0xF2, "???", &CPU::XXX, &CPU::IMP, 2 },{ 0xF3, "ISC", &CPU::ISC, &CPU::IZY, 8 },{ 0xF4, "NOP", &CPU::NOP, &CPU::ZPX, 4 },{ 0xF5, "SBC", &CPU::SBC, &CPU::ZPX, 4 },{ 0xF6, "INC", &CPU::INC, &CPU::ZPX, 6 },{ 0xF7, "ISC", &CPU::ISC, &CPU::ZPX, 6 },{ 0xF8, "SED", &CPU::SED, &CPU::IMP, 2 },{ 0xF9, "SBC", &CPU::SBC, &CPU::ABY, 4 },{ 0xFA, "NOP", &CPU::NOP, &CPU::IMP, 2 },{ 0xFB, "ISC", &CPU::ISC, &CPU::ABY, 7 },{ 0xFC, "NOP", &CPU::NOP, &CPU::ABX, 4 },{ 0xFD, "SBC", &CPU::SBC, &CPU::ABX, 4 },{ 0xFE, "INC", &CPU::INC, &CPU::ABX, 7 },{ 0xFF, "ISC", &CPU::ISC, &CPU::ABX, 7 },
   };
 }
 
-void Cpu::Reset()
+void CPU::Reset()
 {
   // Get address to set program counter to
   m_addrAbs = 0xFFFC;
@@ -61,7 +61,7 @@ void Cpu::Reset()
   m_cycles = 8;
 }
 
-void Cpu::Clock()
+void CPU::Clock()
 {
   if (m_cycles == 0)
   {
@@ -99,7 +99,7 @@ void Cpu::Clock()
   m_cycles--;
 }
 
-void Cpu::NMI()
+void CPU::NMI()
 {
   Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
   m_stackPointer--;
@@ -120,7 +120,7 @@ void Cpu::NMI()
   m_cycles = 8;
 }
 
-std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t addrStop)
+std::map<uint16_t, std::string> CPU::Disassemble(uint16_t addrStart, uint16_t addrStop)
 {
   uint8_t value = 0x00;
   uint8_t lo = 0x00;
@@ -150,70 +150,70 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
     uint8_t opcode = m_bus->Read(addr, true); addr++;
     sInst += m_lookup[opcode].name + " ";
 
-    if (m_lookup[opcode].addrmode == &Cpu::IMP)
+    if (m_lookup[opcode].addrmode == &CPU::IMP)
     {
       sInst += " {IMP}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::IMM)
+    else if (m_lookup[opcode].addrmode == &CPU::IMM)
     {
       value = m_bus->Read(addr, true); addr++;
       sInst += "#$" + hex(value, 2) + " {IMM}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ZP0)
+    else if (m_lookup[opcode].addrmode == &CPU::ZP0)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + " {ZP0}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ZPX)
+    else if (m_lookup[opcode].addrmode == &CPU::ZPX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", X {ZPX}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ZPY)
+    else if (m_lookup[opcode].addrmode == &CPU::ZPY)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::IZX)
+    else if (m_lookup[opcode].addrmode == &CPU::IZX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + ", X) {IZX}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::IZY)
+    else if (m_lookup[opcode].addrmode == &CPU::IZY)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = 0x00;
       sInst += "($" + hex(lo, 2) + "), Y {IZY}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ABS)
+    else if (m_lookup[opcode].addrmode == &CPU::ABS)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ABX)
+    else if (m_lookup[opcode].addrmode == &CPU::ABX)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::ABY)
+    else if (m_lookup[opcode].addrmode == &CPU::ABY)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::IND)
+    else if (m_lookup[opcode].addrmode == &CPU::IND)
     {
       lo = m_bus->Read(addr, true); addr++;
       hi = m_bus->Read(addr, true); addr++;
       sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
     }
-    else if (m_lookup[opcode].addrmode == &Cpu::REL)
+    else if (m_lookup[opcode].addrmode == &CPU::REL)
     {
       value = m_bus->Read(addr, true); addr++;
       sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
@@ -229,7 +229,7 @@ std::map<uint16_t, std::string> Cpu::Disassemble(uint16_t addrStart, uint16_t ad
 // There is no additional data required for this instruction. The instruction
 // does something very simple like like sets a status bit. However, we will
 // target the accumulator, for instructions like PHA
-uint8_t Cpu::IMP()
+uint8_t CPU::IMP()
 {
   m_fetched = m_a;
   return 0;
@@ -238,7 +238,7 @@ uint8_t Cpu::IMP()
 // Address Mode: Immediate
 // The instruction expects the next byte to be used as a value, so we'll prep
 // the read address to point to the next byte
-uint8_t Cpu::IMM()
+uint8_t CPU::IMM()
 {
   m_addrAbs = m_programCounter++;
   return 0;
@@ -248,7 +248,7 @@ uint8_t Cpu::IMM()
 // To save program bytes, zero page addressing allows you to absolutely address
 // a location in first 0xFF bytes of address range. Clearly this only requires
 // one byte instead of the usual two.
-uint8_t Cpu::ZP0()
+uint8_t CPU::ZP0()
 {
   m_addrAbs = Read(m_programCounter);
   m_programCounter++;
@@ -260,7 +260,7 @@ uint8_t Cpu::ZP0()
 // Fundamentally the same as Zero Page addressing, but the contents of the X Register
 // is added to the supplied single byte address. This is useful for iterating through
 // ranges within the first page.
-uint8_t Cpu::ZPX()
+uint8_t CPU::ZPX()
 {
   m_addrAbs = (Read(m_programCounter) + m_x);
   m_programCounter++;
@@ -270,7 +270,7 @@ uint8_t Cpu::ZPX()
 
 // Address Mode: Zero Page with Y Offset
 // Same as above but uses Y Register for offset
-uint8_t Cpu::ZPY()
+uint8_t CPU::ZPY()
 {
   m_addrAbs = (Read(m_programCounter) + m_y);
   m_programCounter++;
@@ -282,7 +282,7 @@ uint8_t Cpu::ZPY()
 // This address mode is exclusive to branch instructions. The address
 // must reside within -128 to +127 of the branch instruction, i.e.
 // you cant directly branch to any address in the addressable range.
-uint8_t Cpu::REL()
+uint8_t CPU::REL()
 {
   m_addrRel = Read(m_programCounter);
   m_programCounter++;
@@ -293,7 +293,7 @@ uint8_t Cpu::REL()
 
 // Address Mode: Absolute
 // A full 16-bit address is loaded and used
-uint8_t Cpu::ABS()
+uint8_t CPU::ABS()
 {
   uint16_t lo = Read(m_programCounter);
   m_programCounter++;
@@ -309,7 +309,7 @@ uint8_t Cpu::ABS()
 // Fundamentally the same as absolute addressing, but the contents of the X Register
 // is added to the supplied two byte address. If the resulting address changes
 // the page, an additional clock cycle is required
-uint8_t Cpu::ABX()
+uint8_t CPU::ABX()
 {
   uint16_t lo = Read(m_programCounter);
   m_programCounter++;
@@ -329,7 +329,7 @@ uint8_t Cpu::ABX()
 // Fundamentally the same as absolute addressing, but the contents of the Y Register
 // is added to the supplied two byte address. If the resulting address changes
 // the page, an additional clock cycle is required
-uint8_t Cpu::ABY()
+uint8_t CPU::ABY()
 {
   uint16_t lo = Read(m_programCounter);
   m_programCounter++;
@@ -353,7 +353,7 @@ uint8_t Cpu::ABY()
 // we need to cross a page boundary. This doesnt actually work on the chip as
 // designed, instead it wraps back around in the same page, yielding an
 // invalid actual address
-uint8_t Cpu::IND()
+uint8_t CPU::IND()
 {
   uint16_t ptr_lo = Read(m_programCounter);
   m_programCounter++;
@@ -378,7 +378,7 @@ uint8_t Cpu::IND()
 // The supplied 8-bit address is offset by X Register to index
 // a location in page 0x00. The actual 16-bit address is read
 // from this location
-uint8_t Cpu::IZX()
+uint8_t CPU::IZX()
 {
   uint16_t t = Read(m_programCounter);
   m_programCounter++;
@@ -396,7 +396,7 @@ uint8_t Cpu::IZX()
 // here the actual 16-bit address is read, and the contents of
 // Y Register is added to it to offset it. If the offset causes a
 // change in page then an additional clock cycle is required.
-uint8_t Cpu::IZY()
+uint8_t CPU::IZY()
 {
   uint16_t t = Read(m_programCounter);
   m_programCounter++;
@@ -413,30 +413,30 @@ uint8_t Cpu::IZY()
     return 0;
 }
 
-void Cpu::Write(uint16_t addr, uint8_t data)
+void CPU::Write(uint16_t addr, uint8_t data)
 {
   m_bus->Write(addr, data);
 }
 
-uint8_t Cpu::Read(uint16_t addr)
+uint8_t CPU::Read(uint16_t addr)
 {
   return m_bus->Read(addr, false);
 }
 
-uint8_t Cpu::Fetch()
+uint8_t CPU::Fetch()
 {
-  if (!(m_lookup[m_opcode].addrmode == &Cpu::IMP))
+  if (!(m_lookup[m_opcode].addrmode == &CPU::IMP))
     m_fetched = Read(m_addrAbs);
 
   return m_fetched;
 }
 
-uint8_t Cpu::GetFlag(Flags flag)
+uint8_t CPU::GetFlag(Flags flag)
 {
   return ((m_status & flag) > 0) ? 1 : 0;
 }
 
-void Cpu::SetFlag(Flags flag, bool setClear)
+void CPU::SetFlag(Flags flag, bool setClear)
 {
   if (setClear)
     m_status |= flag;
@@ -505,7 +505,7 @@ void Cpu::SetFlag(Flags flag, bool setClear)
 //       Positive Number + Negative Number = Either Result -> Cannot Overflow
 //       Positive Number + Positive Number = Positive Result -> OK! No Overflow
 //       Negative Number + Negative Number = Negative Result -> OK! NO Overflow
-uint8_t Cpu::ADC()
+uint8_t CPU::ADC()
 {
   // Grab the data that we are adding to the accumulator
   Fetch();
@@ -558,7 +558,7 @@ uint8_t Cpu::ADC()
 // This means we already have the +1, so all we need to do is invert the bits
 // of M, the data(!) therfore we can simply add, exactly the same way we did
 // before.
-uint8_t Cpu::SBC()
+uint8_t CPU::SBC()
 {
   Fetch();
 
@@ -589,7 +589,7 @@ uint8_t Cpu::SBC()
 // Instruction: Bitwise Logic AND
 // Function:    A = A & M
 // Flags Out:   N, Z
-uint8_t Cpu::AND()
+uint8_t CPU::AND()
 {
   Fetch();
   m_a = m_a & m_fetched;
@@ -601,14 +601,14 @@ uint8_t Cpu::AND()
 // Instruction: Arithmetic Shift Left
 // Function:    A = C <- (A << 1) <- 0
 // Flags Out:   N, Z, C
-uint8_t Cpu::ASL()
+uint8_t CPU::ASL()
 {
   Fetch();
   m_temp = (uint16_t)m_fetched << 1;
   SetFlag(C, (m_temp & 0xFF00) > 0);
   SetFlag(Z, (m_temp & 0x00FF) == 0x00);
   SetFlag(N, m_temp & 0x80);
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -617,7 +617,7 @@ uint8_t Cpu::ASL()
 
 // Instruction: Branch if Carry Clear
 // Function:    if(C == 0) pc = address
-uint8_t Cpu::BCC()
+uint8_t CPU::BCC()
 {
   if (GetFlag(C) == 0)
   {
@@ -634,7 +634,7 @@ uint8_t Cpu::BCC()
 
 // Instruction: Branch if Carry Set
 // Function:    if(C == 1) pc = address
-uint8_t Cpu::BCS()
+uint8_t CPU::BCS()
 {
   if (GetFlag(C) == 1)
   {
@@ -651,7 +651,7 @@ uint8_t Cpu::BCS()
 
 // Instruction: Branch if Equal
 // Function:    if(Z == 1) pc = address
-uint8_t Cpu::BEQ()
+uint8_t CPU::BEQ()
 {
   if (GetFlag(Z) == 1)
   {
@@ -666,7 +666,7 @@ uint8_t Cpu::BEQ()
   return 0;
 }
 
-uint8_t Cpu::BIT()
+uint8_t CPU::BIT()
 {
   Fetch();
   m_temp = m_a & m_fetched;
@@ -678,7 +678,7 @@ uint8_t Cpu::BIT()
 
 // Instruction: Branch if Negative
 // Function:    if(N == 1) pc = address
-uint8_t Cpu::BMI()
+uint8_t CPU::BMI()
 {
   if (GetFlag(N) == 1)
   {
@@ -695,7 +695,7 @@ uint8_t Cpu::BMI()
 
 // Instruction: Branch if Not Equal
 // Function:    if(Z == 0) pc = address
-uint8_t Cpu::BNE()
+uint8_t CPU::BNE()
 {
   if (GetFlag(Z) == 0)
   {
@@ -712,7 +712,7 @@ uint8_t Cpu::BNE()
 
 // Instruction: Branch if Positive
 // Function:    if(N == 0) pc = address
-uint8_t Cpu::BPL()
+uint8_t CPU::BPL()
 {
   if (GetFlag(N) == 0)
   {
@@ -729,7 +729,7 @@ uint8_t Cpu::BPL()
 
 // Instruction: Break
 // Function:    Program Sourced Interrupt
-uint8_t Cpu::BRK()
+uint8_t CPU::BRK()
 {
   m_programCounter++;
 
@@ -750,7 +750,7 @@ uint8_t Cpu::BRK()
 
 // Instruction: Branch if Overflow Clear
 // Function:    if(V == 0) pc = address
-uint8_t Cpu::BVC()
+uint8_t CPU::BVC()
 {
   if (GetFlag(V) == 0)
   {
@@ -767,7 +767,7 @@ uint8_t Cpu::BVC()
 
 // Instruction: Branch if Overflow Set
 // Function:    if(V == 1) pc = address
-uint8_t Cpu::BVS()
+uint8_t CPU::BVS()
 {
   if (GetFlag(V) == 1)
   {
@@ -784,7 +784,7 @@ uint8_t Cpu::BVS()
 
 // Instruction: Clear Carry Flag
 // Function:    C = 0
-uint8_t Cpu::CLC()
+uint8_t CPU::CLC()
 {
   SetFlag(C, false);
   return 0;
@@ -792,7 +792,7 @@ uint8_t Cpu::CLC()
 
 // Instruction: Clear Decimal Flag
 // Function:    D = 0
-uint8_t Cpu::CLD()
+uint8_t CPU::CLD()
 {
   SetFlag(D, false);
   return 0;
@@ -800,7 +800,7 @@ uint8_t Cpu::CLD()
 
 // Instruction: Disable Interrupts / Clear Interrupt Flag
 // Function:    I = 0
-uint8_t Cpu::CLI()
+uint8_t CPU::CLI()
 {
   SetFlag(I, false);
   return 0;
@@ -809,7 +809,7 @@ uint8_t Cpu::CLI()
 
 // Instruction: Clear Overflow Flag
 // Function:    V = 0
-uint8_t Cpu::CLV()
+uint8_t CPU::CLV()
 {
   SetFlag(V, false);
   return 0;
@@ -818,7 +818,7 @@ uint8_t Cpu::CLV()
 // Instruction: Compare Accumulator
 // Function:    C <- A >= M      Z <- (A - M) == 0
 // Flags Out:   N, C, Z
-uint8_t Cpu::CMP()
+uint8_t CPU::CMP()
 {
   Fetch();
   m_temp = (uint16_t)m_a - (uint16_t)m_fetched;
@@ -831,7 +831,7 @@ uint8_t Cpu::CMP()
 // Instruction: Compare X Register
 // Function:    C <- X >= M      Z <- (X - M) == 0
 // Flags Out:   N, C, Z
-uint8_t Cpu::CPX()
+uint8_t CPU::CPX()
 {
   Fetch();
   m_temp = (uint16_t)m_x - (uint16_t)m_fetched;
@@ -844,7 +844,7 @@ uint8_t Cpu::CPX()
 // Instruction: Compare Y Register
 // Function:    C <- Y >= M      Z <- (Y - M) == 0
 // Flags Out:   N, C, Z
-uint8_t Cpu::CPY()
+uint8_t CPU::CPY()
 {
   Fetch();
   m_temp = (uint16_t)m_y - (uint16_t)m_fetched;
@@ -857,7 +857,7 @@ uint8_t Cpu::CPY()
 // Instruction: Decrement Value at Memory Location
 // Function:    M = M - 1
 // Flags Out:   N, Z
-uint8_t Cpu::DEC()
+uint8_t CPU::DEC()
 {
   Fetch();
   m_temp = m_fetched - 1;
@@ -870,7 +870,7 @@ uint8_t Cpu::DEC()
 // Instruction: Decrement X Register
 // Function:    X = X - 1
 // Flags Out:   N, Z
-uint8_t Cpu::DEX()
+uint8_t CPU::DEX()
 {
   m_x--;
   SetFlag(Z, m_x == 0x00);
@@ -881,7 +881,7 @@ uint8_t Cpu::DEX()
 // Instruction: Decrement Y Register
 // Function:    Y = Y - 1
 // Flags Out:   N, Z
-uint8_t Cpu::DEY()
+uint8_t CPU::DEY()
 {
   m_y--;
   SetFlag(Z, m_y == 0x00);
@@ -892,7 +892,7 @@ uint8_t Cpu::DEY()
 // Instruction: Bitwise Logic XOR
 // Function:    A = A xor M
 // Flags Out:   N, Z
-uint8_t Cpu::EOR()
+uint8_t CPU::EOR()
 {
   Fetch();
   m_a = m_a ^ m_fetched;
@@ -904,7 +904,7 @@ uint8_t Cpu::EOR()
 // Instruction: Increment Value at Memory Location
 // Function:    M = M + 1
 // Flags Out:   N, Z
-uint8_t Cpu::INC()
+uint8_t CPU::INC()
 {
   Fetch();
   m_temp = m_fetched + 1;
@@ -917,7 +917,7 @@ uint8_t Cpu::INC()
 // Instruction: Increment X Register
 // Function:    X = X + 1
 // Flags Out:   N, Z
-uint8_t Cpu::INX()
+uint8_t CPU::INX()
 {
   m_x++;
   SetFlag(Z, m_x == 0x00);
@@ -928,7 +928,7 @@ uint8_t Cpu::INX()
 // Instruction: Increment Y Register
 // Function:    Y = Y + 1
 // Flags Out:   N, Z
-uint8_t Cpu::INY()
+uint8_t CPU::INY()
 {
   m_y++;
   SetFlag(Z, m_y == 0x00);
@@ -938,7 +938,7 @@ uint8_t Cpu::INY()
 
 // Instruction: Jump To Location
 // Function:    pc = address
-uint8_t Cpu::JMP()
+uint8_t CPU::JMP()
 {
   m_programCounter = m_addrAbs;
   return 0;
@@ -946,7 +946,7 @@ uint8_t Cpu::JMP()
 
 // Instruction: Jump To Sub-Routine
 // Function:    Push current pc to stack, pc = address
-uint8_t Cpu::JSR()
+uint8_t CPU::JSR()
 {
   m_programCounter--;
 
@@ -962,7 +962,7 @@ uint8_t Cpu::JSR()
 // Instruction: Load The Accumulator
 // Function:    A = M
 // Flags Out:   N, Z
-uint8_t Cpu::LDA()
+uint8_t CPU::LDA()
 {
   Fetch();
   m_a = m_fetched;
@@ -974,7 +974,7 @@ uint8_t Cpu::LDA()
 // Instruction: Load The X Register
 // Function:    X = M
 // Flags Out:   N, Z
-uint8_t Cpu::LDX()
+uint8_t CPU::LDX()
 {
   Fetch();
   m_x = m_fetched;
@@ -986,7 +986,7 @@ uint8_t Cpu::LDX()
 // Instruction: Load The Y Register
 // Function:    Y = M
 // Flags Out:   N, Z
-uint8_t Cpu::LDY()
+uint8_t CPU::LDY()
 {
   Fetch();
   m_y = m_fetched;
@@ -996,14 +996,14 @@ uint8_t Cpu::LDY()
 }
 
 // TODO
-uint8_t Cpu::LSR()
+uint8_t CPU::LSR()
 {
   Fetch();
   SetFlag(C, m_fetched & 0x0001);
   m_temp = m_fetched >> 1;
   SetFlag(Z, m_temp == 0x0000);
   SetFlag(N, 0x0000); // Should not be N = 0?
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -1012,7 +1012,7 @@ uint8_t Cpu::LSR()
 }
 
 // TODO
-uint8_t Cpu::NOP()
+uint8_t CPU::NOP()
 {
   return 0;
 }
@@ -1020,7 +1020,7 @@ uint8_t Cpu::NOP()
 // Instruction: Bitwise Logic OR
 // Function:    A = A | M
 // Flags Out:   N, Z
-uint8_t Cpu::ORA()
+uint8_t CPU::ORA()
 {
   Fetch();
   m_a = m_a | m_fetched;
@@ -1031,7 +1031,7 @@ uint8_t Cpu::ORA()
 
 // Instruction: Push Accumulator to Stack
 // Function:    A -> stack
-uint8_t Cpu::PHA()
+uint8_t CPU::PHA()
 {
   Write(0x0100 + m_stackPointer, m_a);
   m_stackPointer--;
@@ -1041,7 +1041,7 @@ uint8_t Cpu::PHA()
 // Instruction: Push Status Register to Stack
 // Function:    status -> stack
 // Note:        Break flag is set to 1 before push
-uint8_t Cpu::PHP()
+uint8_t CPU::PHP()
 {
   Write(0x0100 + m_stackPointer, m_status | B | U);
   SetFlag(B, 0);
@@ -1053,7 +1053,7 @@ uint8_t Cpu::PHP()
 // Instruction: Pop Accumulator off Stack
 // Function:    A <- stack
 // Flags Out:   N, Z
-uint8_t Cpu::PLA()
+uint8_t CPU::PLA()
 {
   m_stackPointer++;
   m_a = Read(0x0100 + m_stackPointer);
@@ -1064,7 +1064,7 @@ uint8_t Cpu::PLA()
 
 // Instruction: Pop Status Register off Stack
 // Function:    Status <- stack
-uint8_t Cpu::PLP()
+uint8_t CPU::PLP()
 {
   m_stackPointer++;
   m_status = Read(0x0100 + m_stackPointer);
@@ -1072,35 +1072,35 @@ uint8_t Cpu::PLP()
   return 0;
 }
 
-uint8_t Cpu::ROL()
+uint8_t CPU::ROL()
 {
   Fetch();
   m_temp = (uint16_t)(m_fetched << 1) | GetFlag(C);
   SetFlag(C, m_temp & 0xFF00);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
   SetFlag(N, m_temp & 0x0080);
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
   return 0;
 }
 
-uint8_t Cpu::ROR()
+uint8_t CPU::ROR()
 {
   Fetch();
   m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
   SetFlag(C, m_fetched & 0x01);
   SetFlag(Z, (m_temp & 0x00FF) == 0x00);
   SetFlag(N, m_temp & 0x0080);
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
   return 0;
 }
 
-uint8_t Cpu::RTI()
+uint8_t CPU::RTI()
 {
   m_stackPointer++;
   m_status = Read(0x0100 + m_stackPointer);
@@ -1114,7 +1114,7 @@ uint8_t Cpu::RTI()
   return 0;
 }
 
-uint8_t Cpu::RTS()
+uint8_t CPU::RTS()
 {
   m_stackPointer++;
   m_programCounter = (uint16_t)Read(0x0100 + m_stackPointer);
@@ -1127,7 +1127,7 @@ uint8_t Cpu::RTS()
 
 // Instruction: Set Carry Flag
 // Function:    C = 1
-uint8_t Cpu::SEC()
+uint8_t CPU::SEC()
 {
   SetFlag(C, true);
   return 0;
@@ -1135,7 +1135,7 @@ uint8_t Cpu::SEC()
 
 // Instruction: Set Decimal Flag
 // Function:    D = 1
-uint8_t Cpu::SED()
+uint8_t CPU::SED()
 {
   SetFlag(D, true);
   return 0;
@@ -1143,7 +1143,7 @@ uint8_t Cpu::SED()
 
 // Instruction: Set Interrupt Flag / Enable Interrupts
 // Function:    I = 1
-uint8_t Cpu::SEI()
+uint8_t CPU::SEI()
 {
   SetFlag(I, true);
   return 0;
@@ -1151,7 +1151,7 @@ uint8_t Cpu::SEI()
 
 // Instruction: Store Accumulator at Address
 // Function:    M = A
-uint8_t Cpu::STA()
+uint8_t CPU::STA()
 {
   Write(m_addrAbs, m_a);
   return 0;
@@ -1159,7 +1159,7 @@ uint8_t Cpu::STA()
 
 // Instruction: Store X Register at Address
 // Function:    M = X
-uint8_t Cpu::STX()
+uint8_t CPU::STX()
 {
   Write(m_addrAbs, m_x);
   return 0;
@@ -1167,7 +1167,7 @@ uint8_t Cpu::STX()
 
 // Instruction: Store Y Register at Address
 // Function:    M = Y
-uint8_t Cpu::STY()
+uint8_t CPU::STY()
 {
   Write(m_addrAbs, m_y);
   return 0;
@@ -1176,7 +1176,7 @@ uint8_t Cpu::STY()
 // Instruction: Transfer Accumulator to X Register
 // Function:    X = A
 // Flags Out:   N, Z
-uint8_t Cpu::TAX()
+uint8_t CPU::TAX()
 {
   m_x = m_a;
   SetFlag(Z, m_x == 0x00);
@@ -1187,7 +1187,7 @@ uint8_t Cpu::TAX()
 // Instruction: Transfer Accumulator to Y Register
 // Function:    Y = A
 // Flags Out:   N, Z
-uint8_t Cpu::TAY()
+uint8_t CPU::TAY()
 {
   m_y = m_a;
   SetFlag(Z, m_y == 0x00);
@@ -1198,7 +1198,7 @@ uint8_t Cpu::TAY()
 // Instruction: Transfer Stack Pointer to X Register
 // Function:    X = stack pointer
 // Flags Out:   N, Z
-uint8_t Cpu::TSX()
+uint8_t CPU::TSX()
 {
   m_x = m_stackPointer;
   SetFlag(Z, m_x == 0x00);
@@ -1209,7 +1209,7 @@ uint8_t Cpu::TSX()
 // Instruction: Transfer X Register to Accumulator
 // Function:    A = X
 // Flags Out:   N, Z
-uint8_t Cpu::TXA()
+uint8_t CPU::TXA()
 {
   m_a = m_x;
   SetFlag(Z, m_a == 0x00);
@@ -1219,7 +1219,7 @@ uint8_t Cpu::TXA()
 
 // Instruction: Transfer X Register to Stack Pointer
 // Function:    stack pointer = X
-uint8_t Cpu::TXS()
+uint8_t CPU::TXS()
 {
   m_stackPointer = m_x;
   return 0;
@@ -1228,7 +1228,7 @@ uint8_t Cpu::TXS()
 // Instruction: Transfer Y Register to Accumulator
 // Function:    A = Y
 // Flags Out:   N, Z
-uint8_t Cpu::TYA()
+uint8_t CPU::TYA()
 {
   m_a = m_y;
   SetFlag(Z, m_a == 0x00);
@@ -1237,7 +1237,7 @@ uint8_t Cpu::TYA()
 }
 
 // TODO
-uint8_t Cpu::LAX()
+uint8_t CPU::LAX()
 {
   Fetch();
   m_a = m_fetched;
@@ -1250,7 +1250,7 @@ uint8_t Cpu::LAX()
 }
 
 // TODO
-uint8_t Cpu::SAX()
+uint8_t CPU::SAX()
 {
   Write(m_addrAbs, m_a & m_x);
   return 0;
@@ -1258,7 +1258,7 @@ uint8_t Cpu::SAX()
 
 // TODO
 // Decrement then ComPare
-uint8_t Cpu::DCP()
+uint8_t CPU::DCP()
 {
   // DEC
   Fetch();
@@ -1278,12 +1278,12 @@ uint8_t Cpu::DCP()
 
 // TODO
 // Shift Right then Eor
-uint8_t Cpu::SRE()
+uint8_t CPU::SRE()
 {
   // LSR
   Fetch();
   m_temp = m_fetched >> 1;
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -1302,12 +1302,12 @@ uint8_t Cpu::SRE()
 
 // TODO
 // Rotate the value Right, then Add w/ carry flag to the accumulator
-uint8_t Cpu::RRA()
+uint8_t CPU::RRA()
 {
   // ROR
   Fetch();
   m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -1329,12 +1329,12 @@ uint8_t Cpu::RRA()
 
 // TODO
 // Rotate Left then And
-uint8_t Cpu::RLA()
+uint8_t CPU::RLA()
 {
   // ROL
   Fetch();
   m_temp = (uint16_t)(m_fetched << 1) | GetFlag(C);
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -1352,7 +1352,7 @@ uint8_t Cpu::RLA()
 
 // TODO
 // Increment then Subtract with Carry
-uint8_t Cpu::ISC()
+uint8_t CPU::ISC()
 {
   // INC
   Fetch();
@@ -1375,12 +1375,12 @@ uint8_t Cpu::ISC()
 
 // TODO
 // Shift Left then Or
-uint8_t Cpu::SLO()
+uint8_t CPU::SLO()
 {
   // ASL
   Fetch();
   m_temp = (uint16_t)m_fetched << 1;
-  if (m_lookup[m_opcode].addrmode == &Cpu::IMP)
+  if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
     Write(m_addrAbs, m_temp & 0x00FF);
@@ -1397,7 +1397,7 @@ uint8_t Cpu::SLO()
 }
 
 // This function captures illegal opcodes
-uint8_t Cpu::XXX()
+uint8_t CPU::XXX()
 {
   return 0;
 }

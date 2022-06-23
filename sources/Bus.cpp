@@ -1,7 +1,7 @@
 #include "Bus.h"
 #include "Cartridge.h"
-#include "Cpu.h"
-#include "Ppu.h"
+#include "CPU.h"
+#include "PPU.h"
 
 void Bus::Write(uint16_t addr, uint8_t data)
 {
@@ -52,13 +52,13 @@ void Bus::ConnectRam(std::array<uint8_t, 2 * 1024>* ram)
   m_ram = ram;
 }
 
-void Bus::ConnectCpu(Cpu* cpu)
+void Bus::ConnectCpu(CPU* cpu)
 {
   m_cpu = cpu;
   m_cpu->ConnectToBus(this);
 }
 
-void Bus::ConnectPpu(Ppu* ppu)
+void Bus::ConnectPPU(PPU* ppu)
 {
   m_ppu = ppu;
 }

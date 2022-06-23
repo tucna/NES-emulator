@@ -25,20 +25,20 @@ $4020 - $FFFF	$BFE0	Cartridge space : PRG ROM, PRG RAM, and mapper registers(See
 class Bus;
 
 // NES uses 6502
-class Cpu
+class CPU
 {
 public:
   struct Instruction
   {
     uint8_t opcode;
     std::string name;
-    uint8_t(Cpu::*operate)(void);
-    uint8_t(Cpu::*addrmode)(void);
+    uint8_t(CPU::*operate)(void);
+    uint8_t(CPU::*addrmode)(void);
     uint8_t cycles;
   };
 
-  Cpu();
-  ~Cpu() {}
+  CPU();
+  ~CPU() {}
 
   void Reset();
   void NMI();
