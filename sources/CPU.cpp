@@ -101,9 +101,9 @@ void CPU::Clock()
 
 void CPU::NMI()
 {
-  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
+  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & LO_BYTE);
   m_stackPointer--;
-  Write(0x0100 + m_stackPointer, m_programCounter & 0x00FF);
+  Write(0x0100 + m_stackPointer, m_programCounter & LO_BYTE);
   m_stackPointer--;
 
   SetFlag(B, 0);
@@ -252,7 +252,7 @@ uint8_t CPU::ZP0()
 {
   m_addrAbs = Read(m_programCounter);
   m_programCounter++;
-  m_addrAbs &= 0x00FF;
+  m_addrAbs &= LO_BYTE;
   return 0;
 }
 
@@ -264,7 +264,7 @@ uint8_t CPU::ZPX()
 {
   m_addrAbs = (Read(m_programCounter) + m_x);
   m_programCounter++;
-  m_addrAbs &= 0x00FF;
+  m_addrAbs &= LO_BYTE;
   return 0;
 }
 
@@ -274,7 +274,7 @@ uint8_t CPU::ZPY()
 {
   m_addrAbs = (Read(m_programCounter) + m_y);
   m_programCounter++;
-  m_addrAbs &= 0x00FF;
+  m_addrAbs &= LO_BYTE;
   return 0;
 }
 
@@ -287,7 +287,7 @@ uint8_t CPU::REL()
   m_addrRel = Read(m_programCounter);
   m_programCounter++;
   if (m_addrRel & NEGATIVE_MASK)
-    m_addrRel |= 0xFF00;
+    m_addrRel |= HI_BYTE;
   return 0;
 }
 
@@ -319,7 +319,7 @@ uint8_t CPU::ABX()
   m_addrAbs = (hi << 8) | lo;
   m_addrAbs += m_x;
 
-  if ((m_addrAbs & 0xFF00) != (hi << 8))
+  if ((m_addrAbs & HI_BYTE) != (hi << 8))
     return 1;
   else
     return 0;
@@ -339,7 +339,7 @@ uint8_t CPU::ABY()
   m_addrAbs = (hi << 8) | lo;
   m_addrAbs += m_y;
 
-  if ((m_addrAbs & 0xFF00) != (hi << 8))
+  if ((m_addrAbs & HI_BYTE) != (hi << 8))
     return 1;
   else
     return 0;
@@ -362,9 +362,9 @@ uint8_t CPU::IND()
 
   uint16_t ptr = (ptr_hi << 8) | ptr_lo;
 
-  if (ptr_lo == 0x00FF) // Simulate page boundary hardware bug
+  if (ptr_lo == LO_BYTE) // Simulate page boundary hardware bug
   {
-    m_addrAbs = (Read(ptr & 0xFF00) << 8) | Read(ptr + 0);
+    m_addrAbs = (Read(ptr & HI_BYTE) << 8) | Read(ptr + 0);
   }
   else // Behave normally
   {
@@ -383,8 +383,8 @@ uint8_t CPU::IZX()
   uint16_t t = Read(m_programCounter);
   m_programCounter++;
 
-  uint16_t lo = Read((uint16_t)(t + (uint16_t)m_x) & 0x00FF);
-  uint16_t hi = Read((uint16_t)(t + (uint16_t)m_x + 1) & 0x00FF);
+  uint16_t lo = Read((uint16_t)(t + (uint16_t)m_x) & LO_BYTE);
+  uint16_t hi = Read((uint16_t)(t + (uint16_t)m_x + 1) & LO_BYTE);
 
   m_addrAbs = (hi << 8) | lo;
 
@@ -401,13 +401,13 @@ uint8_t CPU::IZY()
   uint16_t t = Read(m_programCounter);
   m_programCounter++;
 
-  uint16_t lo = Read(t & 0x00FF);
-  uint16_t hi = Read((t + 1) & 0x00FF);
+  uint16_t lo = Read(t & LO_BYTE);
+  uint16_t hi = Read((t + 1) & LO_BYTE);
 
   m_addrAbs = (hi << 8) | lo;
   m_addrAbs += m_y;
 
-  if ((m_addrAbs & 0xFF00) != (hi << 8))
+  if ((m_addrAbs & HI_BYTE) != (hi << 8))
     return 1;
   else
     return 0;
@@ -518,7 +518,7 @@ uint8_t CPU::ADC()
   SetFlag(C, m_temp > 255);
 
   // The Zero flag is set if the result is 0
-  SetFlag(Z, (m_temp & 0x00FF) == 0);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0);
 
   // The signed Overflow flag is set based on all that up there! :D
   SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & NEGATIVE_MASK);
@@ -527,7 +527,7 @@ uint8_t CPU::ADC()
   SetFlag(N, m_temp & NEGATIVE_MASK);
 
   // Load the result into the accumulator (it's 8-bit dont forget!)
-  m_a = m_temp & 0x00FF;
+  m_a = m_temp & LO_BYTE;
 
   // This instruction has the potential to require an additional clock cycle
   return 1;
@@ -565,15 +565,15 @@ uint8_t CPU::SBC()
   // Operating in 16-bit domain to capture carry out
 
   // We can invert the bottom 8 bits with bitwise xor
-  uint16_t value = ((uint16_t)m_fetched) ^ 0x00FF;
+  uint16_t value = ((uint16_t)m_fetched) ^ LO_BYTE;
 
   // Notice this is exactly the same as addition from here!
   m_temp = (uint16_t)m_a + value + (uint16_t)GetFlag(C);
-  SetFlag(C, m_temp & 0xFF00);
-  SetFlag(Z, ((m_temp & 0x00FF) == 0));
+  SetFlag(C, m_temp & HI_BYTE);
+  SetFlag(Z, ((m_temp & LO_BYTE) == 0));
   SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & NEGATIVE_MASK);
   SetFlag(N, m_temp & NEGATIVE_MASK);
-  m_a = m_temp & 0x00FF;
+  m_a = m_temp & LO_BYTE;
   return 1;
 }
 
@@ -605,13 +605,13 @@ uint8_t CPU::ASL()
 {
   Fetch();
   m_temp = (uint16_t)m_fetched << 1;
-  SetFlag(C, (m_temp & 0xFF00) > 0);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x00);
+  SetFlag(C, (m_temp & HI_BYTE) > 0);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x00);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
   return 0;
 }
 
@@ -624,7 +624,7 @@ uint8_t CPU::BCC()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -641,7 +641,7 @@ uint8_t CPU::BCS()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -658,7 +658,7 @@ uint8_t CPU::BEQ()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -670,7 +670,7 @@ uint8_t CPU::BIT()
 {
   Fetch();
   m_temp = m_a & m_fetched;
-  SetFlag(Z, (m_temp & 0x00FF) == 0x00);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x00);
   SetFlag(N, m_fetched & (1 << 7));
   SetFlag(V, m_fetched & (1 << 6));
   return 0;
@@ -685,7 +685,7 @@ uint8_t CPU::BMI()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -702,7 +702,7 @@ uint8_t CPU::BNE()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -719,7 +719,7 @@ uint8_t CPU::BPL()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -734,9 +734,9 @@ uint8_t CPU::BRK()
   m_programCounter++;
 
   SetFlag(I, 1);
-  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
+  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & LO_BYTE);
   m_stackPointer--;
-  Write(0x0100 + m_stackPointer, m_programCounter & 0x00FF);
+  Write(0x0100 + m_stackPointer, m_programCounter & LO_BYTE);
   m_stackPointer--;
 
   SetFlag(B, 1);
@@ -757,7 +757,7 @@ uint8_t CPU::BVC()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -774,7 +774,7 @@ uint8_t CPU::BVS()
     m_cycles++;
     m_addrAbs = m_programCounter + m_addrRel;
 
-    if ((m_addrAbs & 0xFF00) != (m_programCounter & 0xFF00))
+    if ((m_addrAbs & HI_BYTE) != (m_programCounter & HI_BYTE))
       m_cycles++;
 
     m_programCounter = m_addrAbs;
@@ -823,7 +823,7 @@ uint8_t CPU::CMP()
   Fetch();
   m_temp = (uint16_t)m_a - (uint16_t)m_fetched;
   SetFlag(C, m_a >= m_fetched);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   return 1;
 }
@@ -836,7 +836,7 @@ uint8_t CPU::CPX()
   Fetch();
   m_temp = (uint16_t)m_x - (uint16_t)m_fetched;
   SetFlag(C, m_x >= m_fetched);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
@@ -849,7 +849,7 @@ uint8_t CPU::CPY()
   Fetch();
   m_temp = (uint16_t)m_y - (uint16_t)m_fetched;
   SetFlag(C, m_y >= m_fetched);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
@@ -861,8 +861,8 @@ uint8_t CPU::DEC()
 {
   Fetch();
   m_temp = m_fetched - 1;
-  Write(m_addrAbs, m_temp & 0x00FF);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  Write(m_addrAbs, m_temp & LO_BYTE);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
@@ -908,8 +908,8 @@ uint8_t CPU::INC()
 {
   Fetch();
   m_temp = m_fetched + 1;
-  Write(m_addrAbs, m_temp & 0x00FF);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  Write(m_addrAbs, m_temp & LO_BYTE);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
@@ -950,9 +950,9 @@ uint8_t CPU::JSR()
 {
   m_programCounter--;
 
-  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
+  Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & LO_BYTE);
   m_stackPointer--;
-  Write(0x0100 + m_stackPointer, m_programCounter & 0x00FF);
+  Write(0x0100 + m_stackPointer, m_programCounter & LO_BYTE);
   m_stackPointer--;
 
   m_programCounter = m_addrAbs;
@@ -1004,9 +1004,9 @@ uint8_t CPU::LSR()
   SetFlag(Z, m_temp == 0x0000);
   SetFlag(N, 0x0000); // Should not be N = 0?
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
 
   return 0;
 }
@@ -1076,13 +1076,13 @@ uint8_t CPU::ROL()
 {
   Fetch();
   m_temp = (uint16_t)(m_fetched << 1) | GetFlag(C);
-  SetFlag(C, m_temp & 0xFF00);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(C, m_temp & HI_BYTE);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
   return 0;
 }
 
@@ -1091,12 +1091,12 @@ uint8_t CPU::ROR()
   Fetch();
   m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
   SetFlag(C, m_fetched & 0x01);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x00);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x00);
   SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
   return 0;
 }
 
@@ -1263,14 +1263,14 @@ uint8_t CPU::DCP()
   // DEC
   Fetch();
   m_temp = m_fetched - 1;
-  Write(m_addrAbs, m_temp & 0x00FF);
+  Write(m_addrAbs, m_temp & LO_BYTE);
 
   // CMP
   Fetch();
   m_temp = (uint16_t)m_a - (uint16_t)m_fetched;
 
   SetFlag(C, m_a >= m_fetched);
-  SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0x0000);
   SetFlag(N, m_temp & NEGATIVE_MASK);
 
   return 1;
@@ -1284,9 +1284,9 @@ uint8_t CPU::SRE()
   Fetch();
   m_temp = m_fetched >> 1;
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
 
   SetFlag(C, m_fetched & 0x0001);
 
@@ -1308,9 +1308,9 @@ uint8_t CPU::RRA()
   Fetch();
   m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
 
   SetFlag(C, m_fetched & 0x01);
 
@@ -1318,11 +1318,11 @@ uint8_t CPU::RRA()
   Fetch();
   m_temp = (uint16_t)m_a + (uint16_t)m_fetched + (uint16_t)GetFlag(C);
   SetFlag(C, m_temp > 255);
-  SetFlag(Z, (m_temp & 0x00FF) == 0);
+  SetFlag(Z, (m_temp & LO_BYTE) == 0);
   SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & NEGATIVE_MASK);
   SetFlag(N, m_temp & NEGATIVE_MASK);
 
-  m_a = m_temp & 0x00FF;
+  m_a = m_temp & LO_BYTE;
 
   return 1;
 }
@@ -1335,11 +1335,11 @@ uint8_t CPU::RLA()
   Fetch();
   m_temp = (uint16_t)(m_fetched << 1) | GetFlag(C);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
 
-  SetFlag(C, m_temp & 0xFF00);
+  SetFlag(C, m_temp & HI_BYTE);
 
   // AND
   Fetch();
@@ -1357,18 +1357,18 @@ uint8_t CPU::ISC()
   // INC
   Fetch();
   m_temp = m_fetched + 1;
-  Write(m_addrAbs, m_temp & 0x00FF);
+  Write(m_addrAbs, m_temp & LO_BYTE);
 
   // SBC
   Fetch();
-  uint16_t value = ((uint16_t)m_fetched) ^ 0x00FF;
+  uint16_t value = ((uint16_t)m_fetched) ^ LO_BYTE;
   m_temp = (uint16_t)m_a + value + (uint16_t)GetFlag(C);
-  SetFlag(C, m_temp & 0xFF00);
-  SetFlag(Z, ((m_temp & 0x00FF) == 0));
+  SetFlag(C, m_temp & HI_BYTE);
+  SetFlag(Z, ((m_temp & LO_BYTE) == 0));
   SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & NEGATIVE_MASK);
   SetFlag(N, m_temp & NEGATIVE_MASK);
 
-  m_a = m_temp & 0x00FF;
+  m_a = m_temp & LO_BYTE;
 
   return 1;
 }
@@ -1381,11 +1381,11 @@ uint8_t CPU::SLO()
   Fetch();
   m_temp = (uint16_t)m_fetched << 1;
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
-    m_a = m_temp & 0x00FF;
+    m_a = m_temp & LO_BYTE;
   else
-    Write(m_addrAbs, m_temp & 0x00FF);
+    Write(m_addrAbs, m_temp & LO_BYTE);
 
-  SetFlag(C, (m_temp & 0xFF00) > 0);
+  SetFlag(C, (m_temp & HI_BYTE) > 0);
 
   // ORA
   Fetch();

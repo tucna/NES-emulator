@@ -1,5 +1,6 @@
 #include "Bus.h"
 #include "Cartridge.h"
+#include "Common.h"
 #include "PPU.h"
 
 PPU::PPU() :
@@ -150,11 +151,11 @@ void PPU::Clock()
 
   auto LoadBackgroundShifters = [&]()
   {
-    m_backgroudAttributes.shifterPatternLo = (m_backgroudAttributes.shifterPatternLo & 0xFF00) | m_backgroudAttributes.nextTileLsb;
-    m_backgroudAttributes.shifterPatternHi = (m_backgroudAttributes.shifterPatternHi & 0xFF00) | m_backgroudAttributes.nextTileMsb;
+    m_backgroudAttributes.shifterPatternLo = (m_backgroudAttributes.shifterPatternLo & HI_BYTE) | m_backgroudAttributes.nextTileLsb;
+    m_backgroudAttributes.shifterPatternHi = (m_backgroudAttributes.shifterPatternHi & HI_BYTE) | m_backgroudAttributes.nextTileMsb;
 
-    m_backgroudAttributes.shifterAttrLo = (m_backgroudAttributes.shifterAttrLo & 0xFF00) | ((m_backgroudAttributes.nextTileAttr & 0b01) ? 0xFF : 0x00);
-    m_backgroudAttributes.shifterAttribHi = (m_backgroudAttributes.shifterAttribHi & 0xFF00) | ((m_backgroudAttributes.nextTileAttr & 0b10) ? 0xFF : 0x00);
+    m_backgroudAttributes.shifterAttrLo = (m_backgroudAttributes.shifterAttrLo & HI_BYTE) | ((m_backgroudAttributes.nextTileAttr & 0b01) ? 0xFF : 0x00);
+    m_backgroudAttributes.shifterAttribHi = (m_backgroudAttributes.shifterAttribHi & HI_BYTE) | ((m_backgroudAttributes.nextTileAttr & 0b10) ? 0xFF : 0x00);
   };
 
   auto UpdateShifters = [&]()
@@ -432,12 +433,12 @@ void PPU::WriteByCPU(uint16_t addr, uint8_t data)
   case 0x0006: // PPU Address
     if (m_addressLatch == 0)
     {
-      m_tranAddr.reg = (uint16_t)((data & 0x3F) << 8) | (m_tranAddr.reg & 0x00FF);
+      m_tranAddr.reg = (uint16_t)((data & 0x3F) << 8) | (m_tranAddr.reg & LO_BYTE);
       m_addressLatch = 1;
     }
     else
     {
-      m_tranAddr.reg = (m_tranAddr.reg & 0xFF00) | data;
+      m_tranAddr.reg = (m_tranAddr.reg & HI_BYTE) | data;
       m_vramAddr = m_tranAddr;
       m_addressLatch = 0;
     }
