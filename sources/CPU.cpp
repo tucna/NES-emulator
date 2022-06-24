@@ -286,7 +286,7 @@ uint8_t CPU::REL()
 {
   m_addrRel = Read(m_programCounter);
   m_programCounter++;
-  if (m_addrRel & 0x80)
+  if (m_addrRel & NEGATIVE_MASK)
     m_addrRel |= 0xFF00;
   return 0;
 }
@@ -521,10 +521,10 @@ uint8_t CPU::ADC()
   SetFlag(Z, (m_temp & 0x00FF) == 0);
 
   // The signed Overflow flag is set based on all that up there! :D
-  SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & 0x0080);
+  SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & NEGATIVE_MASK);
 
   // The negative flag is set to the most significant bit of the result
-  SetFlag(N, m_temp & 0x80);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
 
   // Load the result into the accumulator (it's 8-bit dont forget!)
   m_a = m_temp & 0x00FF;
@@ -571,8 +571,8 @@ uint8_t CPU::SBC()
   m_temp = (uint16_t)m_a + value + (uint16_t)GetFlag(C);
   SetFlag(C, m_temp & 0xFF00);
   SetFlag(Z, ((m_temp & 0x00FF) == 0));
-  SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & 0x0080);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & NEGATIVE_MASK);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   m_a = m_temp & 0x00FF;
   return 1;
 }
@@ -594,7 +594,7 @@ uint8_t CPU::AND()
   Fetch();
   m_a = m_a & m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 1;
 }
 
@@ -607,7 +607,7 @@ uint8_t CPU::ASL()
   m_temp = (uint16_t)m_fetched << 1;
   SetFlag(C, (m_temp & 0xFF00) > 0);
   SetFlag(Z, (m_temp & 0x00FF) == 0x00);
-  SetFlag(N, m_temp & 0x80);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
@@ -824,7 +824,7 @@ uint8_t CPU::CMP()
   m_temp = (uint16_t)m_a - (uint16_t)m_fetched;
   SetFlag(C, m_a >= m_fetched);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   return 1;
 }
 
@@ -837,7 +837,7 @@ uint8_t CPU::CPX()
   m_temp = (uint16_t)m_x - (uint16_t)m_fetched;
   SetFlag(C, m_x >= m_fetched);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
 
@@ -850,7 +850,7 @@ uint8_t CPU::CPY()
   m_temp = (uint16_t)m_y - (uint16_t)m_fetched;
   SetFlag(C, m_y >= m_fetched);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
 
@@ -863,7 +863,7 @@ uint8_t CPU::DEC()
   m_temp = m_fetched - 1;
   Write(m_addrAbs, m_temp & 0x00FF);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
 
@@ -874,7 +874,7 @@ uint8_t CPU::DEX()
 {
   m_x--;
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
   return 0;
 }
 
@@ -885,7 +885,7 @@ uint8_t CPU::DEY()
 {
   m_y--;
   SetFlag(Z, m_y == 0x00);
-  SetFlag(N, m_y & 0x80);
+  SetFlag(N, m_y & NEGATIVE_MASK);
   return 0;
 }
 
@@ -897,7 +897,7 @@ uint8_t CPU::EOR()
   Fetch();
   m_a = m_a ^ m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 1;
 }
 
@@ -910,7 +910,7 @@ uint8_t CPU::INC()
   m_temp = m_fetched + 1;
   Write(m_addrAbs, m_temp & 0x00FF);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   return 0;
 }
 
@@ -921,7 +921,7 @@ uint8_t CPU::INX()
 {
   m_x++;
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
   return 0;
 }
 
@@ -932,7 +932,7 @@ uint8_t CPU::INY()
 {
   m_y++;
   SetFlag(Z, m_y == 0x00);
-  SetFlag(N, m_y & 0x80);
+  SetFlag(N, m_y & NEGATIVE_MASK);
   return 0;
 }
 
@@ -967,7 +967,7 @@ uint8_t CPU::LDA()
   Fetch();
   m_a = m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 1;
 }
 
@@ -979,7 +979,7 @@ uint8_t CPU::LDX()
   Fetch();
   m_x = m_fetched;
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
   return 1;
 }
 
@@ -991,7 +991,7 @@ uint8_t CPU::LDY()
   Fetch();
   m_y = m_fetched;
   SetFlag(Z, m_y == 0x00);
-  SetFlag(N, m_y & 0x80);
+  SetFlag(N, m_y & NEGATIVE_MASK);
   return 1;
 }
 
@@ -1025,7 +1025,7 @@ uint8_t CPU::ORA()
   Fetch();
   m_a = m_a | m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 1;
 }
 
@@ -1058,7 +1058,7 @@ uint8_t CPU::PLA()
   m_stackPointer++;
   m_a = Read(0x0100 + m_stackPointer);
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1078,7 +1078,7 @@ uint8_t CPU::ROL()
   m_temp = (uint16_t)(m_fetched << 1) | GetFlag(C);
   SetFlag(C, m_temp & 0xFF00);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
@@ -1092,7 +1092,7 @@ uint8_t CPU::ROR()
   m_temp = (uint16_t)(GetFlag(C) << 7) | (m_fetched >> 1);
   SetFlag(C, m_fetched & 0x01);
   SetFlag(Z, (m_temp & 0x00FF) == 0x00);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & 0x00FF;
   else
@@ -1180,7 +1180,7 @@ uint8_t CPU::TAX()
 {
   m_x = m_a;
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1191,7 +1191,7 @@ uint8_t CPU::TAY()
 {
   m_y = m_a;
   SetFlag(Z, m_y == 0x00);
-  SetFlag(N, m_y & 0x80);
+  SetFlag(N, m_y & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1202,7 +1202,7 @@ uint8_t CPU::TSX()
 {
   m_x = m_stackPointer;
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1213,7 +1213,7 @@ uint8_t CPU::TXA()
 {
   m_a = m_x;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1232,7 +1232,7 @@ uint8_t CPU::TYA()
 {
   m_a = m_y;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
   return 0;
 }
 
@@ -1244,7 +1244,7 @@ uint8_t CPU::LAX()
   m_x = m_a;
 
   SetFlag(Z, m_x == 0x00);
-  SetFlag(N, m_x & 0x80);
+  SetFlag(N, m_x & NEGATIVE_MASK);
 
   return 0;
 }
@@ -1271,7 +1271,7 @@ uint8_t CPU::DCP()
 
   SetFlag(C, m_a >= m_fetched);
   SetFlag(Z, (m_temp & 0x00FF) == 0x0000);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
 
   return 1;
 }
@@ -1295,7 +1295,7 @@ uint8_t CPU::SRE()
   m_a = m_a ^ m_fetched;
 
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
 
   return 1;
 }
@@ -1319,8 +1319,8 @@ uint8_t CPU::RRA()
   m_temp = (uint16_t)m_a + (uint16_t)m_fetched + (uint16_t)GetFlag(C);
   SetFlag(C, m_temp > 255);
   SetFlag(Z, (m_temp & 0x00FF) == 0);
-  SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & 0x0080);
-  SetFlag(N, m_temp & 0x80);
+  SetFlag(V, (~((uint16_t)m_a ^ (uint16_t)m_fetched) & ((uint16_t)m_a ^ (uint16_t)m_temp)) & NEGATIVE_MASK);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
 
   m_a = m_temp & 0x00FF;
 
@@ -1345,7 +1345,7 @@ uint8_t CPU::RLA()
   Fetch();
   m_a = m_a & m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
 
   return 1;
 }
@@ -1365,8 +1365,8 @@ uint8_t CPU::ISC()
   m_temp = (uint16_t)m_a + value + (uint16_t)GetFlag(C);
   SetFlag(C, m_temp & 0xFF00);
   SetFlag(Z, ((m_temp & 0x00FF) == 0));
-  SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & 0x0080);
-  SetFlag(N, m_temp & 0x0080);
+  SetFlag(V, (m_temp ^ (uint16_t)m_a) & (m_temp ^ value) & NEGATIVE_MASK);
+  SetFlag(N, m_temp & NEGATIVE_MASK);
 
   m_a = m_temp & 0x00FF;
 
@@ -1391,7 +1391,7 @@ uint8_t CPU::SLO()
   Fetch();
   m_a = m_a | m_fetched;
   SetFlag(Z, m_a == 0x00);
-  SetFlag(N, m_a & 0x80);
+  SetFlag(N, m_a & NEGATIVE_MASK);
 
   return 1;
 }

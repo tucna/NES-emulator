@@ -3,6 +3,8 @@
   Thank you for the great work!
 */
 
+// TODO! PPU has some issue - drawing is crossing the borders
+
 #pragma once
 
 #include <cstdint>
