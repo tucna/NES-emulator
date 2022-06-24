@@ -139,6 +139,6 @@ private:
   // Lookup table
   std::vector<Instruction> m_lookup;
 
-  // Bus which the CPU is connected to
+  // Bus to which the CPU is connected
   Bus* m_bus;
 };

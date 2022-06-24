@@ -995,14 +995,15 @@ uint8_t CPU::LDY()
   return 1;
 }
 
-// TODO
+// Instruction: Logical Shift Right
+// Flags Out:   N, Z, C
 uint8_t CPU::LSR()
 {
   Fetch();
-  SetFlag(C, m_fetched & 0x0001);
+  SetFlag(C, m_fetched & 0x01);
   m_temp = m_fetched >> 1;
   SetFlag(Z, m_temp == 0x0000);
-  SetFlag(N, 0x0000); // Should not be N = 0?
+  SetFlag(N, 0);
   if (m_lookup[m_opcode].addrmode == &CPU::IMP)
     m_a = m_temp & LO_BYTE;
   else
@@ -1011,13 +1012,14 @@ uint8_t CPU::LSR()
   return 0;
 }
 
-// TODO
+// Instruction: No OPeration
 uint8_t CPU::NOP()
 {
+  // Used as a placeholder in memory, or to add 2 cycles to a time critical operation
   return 0;
 }
 
-// Instruction: Bitwise Logic OR
+// Instruction: OR with Accumulator
 // Function:    A = A | M
 // Flags Out:   N, Z
 uint8_t CPU::ORA()
@@ -1072,6 +1074,8 @@ uint8_t CPU::PLP()
   return 0;
 }
 
+// Instruction: ROtate bits Left
+// Flags Out:   N, Z, C
 uint8_t CPU::ROL()
 {
   Fetch();
@@ -1083,9 +1087,12 @@ uint8_t CPU::ROL()
     m_a = m_temp & LO_BYTE;
   else
     Write(m_addrAbs, m_temp & LO_BYTE);
+
   return 0;
 }
 
+// Instruction: ROtate bits Right
+// Flags Out:   N, Z, C
 uint8_t CPU::ROR()
 {
   Fetch();
@@ -1097,9 +1104,11 @@ uint8_t CPU::ROR()
     m_a = m_temp & LO_BYTE;
   else
     Write(m_addrAbs, m_temp & LO_BYTE);
+
   return 0;
 }
 
+// Instruction: ReTurn from Interrupt
 uint8_t CPU::RTI()
 {
   m_stackPointer++;
@@ -1111,17 +1120,19 @@ uint8_t CPU::RTI()
   m_programCounter = (uint16_t)Read(0x0100 + m_stackPointer);
   m_stackPointer++;
   m_programCounter |= (uint16_t)Read(0x0100 + m_stackPointer) << 8;
+
   return 0;
 }
 
+// Instruction: ReTurn from Subroutine
 uint8_t CPU::RTS()
 {
   m_stackPointer++;
   m_programCounter = (uint16_t)Read(0x0100 + m_stackPointer);
   m_stackPointer++;
   m_programCounter |= (uint16_t)Read(0x0100 + m_stackPointer) << 8;
-
   m_programCounter++;
+
   return 0;
 }
 
@@ -1236,7 +1247,8 @@ uint8_t CPU::TYA()
   return 0;
 }
 
-// TODO
+// Instruction: Load Accumulator and X index
+// Flags Out:   N, Z
 uint8_t CPU::LAX()
 {
   Fetch();
@@ -1249,7 +1261,7 @@ uint8_t CPU::LAX()
   return 0;
 }
 
-// TODO
+// Instruction: Stores X index and Accumulator into memory
 uint8_t CPU::SAX()
 {
   Write(m_addrAbs, m_a & m_x);
