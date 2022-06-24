@@ -143,6 +143,7 @@
     <None Include="sources\engine\vs.cso" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sources\Common.h" />
     <ClInclude Include="sources\CPU.h" />
     <ClInclude Include="sources\Oscillator.h" />
     <ClInclude Include="sources\Mapper_000.h" />

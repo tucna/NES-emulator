@@ -1,6 +1,3 @@
-#define T_PGE_APPLICATION
-#include "engine/tPixelGameEngine.h"
-
 #include "Emulator.h"
 
 using namespace std;

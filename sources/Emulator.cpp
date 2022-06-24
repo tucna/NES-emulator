@@ -1,10 +1,17 @@
+#define T_PGE_APPLICATION
 #include "engine/tPixelGameEngine.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
 
+#include "Bus.h"
+#include "Cartridge.h"
+#include "Common.h"
+#include "CPU.h"
 #include "Emulator.h"
+#include "Oscillator.h"
+#include "PPU.h"
 
 using namespace std;
 
@@ -18,11 +25,12 @@ Emulator::Emulator()
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  // Create NES console
+  // Create NES console HW
   m_bus = make_unique<Bus>();
   m_cpu = make_unique<CPU>();
   m_ppu = make_unique<PPU>();
 
+  // Connect things over bus
   m_bus->ConnectCpu(m_cpu.get());
   m_bus->ConnectPPU(m_ppu.get());
   m_bus->ConnectRam(&m_ram);
@@ -126,9 +134,7 @@ bool Emulator::OnUserUpdate(float fElapsedTime)
   controller |= GetKey(tDX::Key::RIGHT).bHeld ? 0x01 : 0x00;
 
   // Handle debug
-  if (GetKey(tDX::Key::SPACE).bPressed) m_paused = !m_paused;
   if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
-  if (GetKey(tDX::Key::NP2).bPressed) m_oneStep = true;
 
   // Handle hardware
   m_oscillator->Input(fElapsedTime);
@@ -144,6 +150,10 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 {
   if (!m_showUI)
     return true;
+
+  const ImVec4 m_redColor(1.0f, 0.0f, 0.0f, 1.0f);
+  const ImVec4 m_greenColor(0.0f, 1.0f, 0.0f, 1.0f);
+  const ImVec4 m_darkGrayColor(0.6f, 0.6f, 0.6f, 1.0f);
 
   auto print = [&](bool flag)
   {
@@ -190,7 +200,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
 
-  PrepareDisassembledCode(5); // TODO
+  PrepareDisassembledCode(5);
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
 
   ImGui::Begin("Disassembly");
@@ -203,6 +213,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
 
+  // TODO extend memory window
   char page[3] = "00";
 
   ImGui::Begin("Memory window 1");

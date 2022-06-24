@@ -7,6 +7,8 @@
 
 #include <array>
 
+#include "Common.h"
+
 class Cartridge;
 class CPU;
 class PPU;
@@ -20,7 +22,7 @@ public:
   void Write(uint16_t addr, uint8_t data);
   uint8_t Read(uint16_t addr, bool bReadOnly = false);
 
-  void ConnectRam(std::array<uint8_t, 2 * 1024>* ram);
+  void ConnectRam(RAM2KB* ram);
   void ConnectCpu(CPU* cpu);
   void ConnectPPU(PPU* ppu);
   void ConnectCartridge(Cartridge* cartridge);
@@ -28,7 +30,7 @@ public:
   uint8_t& GetController1() { return m_controller[0]; }
 
 private:
-  std::array<uint8_t, 2 * 1024>* m_ram;
+  RAM2KB* m_ram;
 
   // Connected controllers
   // TODO move controller to a separated structure

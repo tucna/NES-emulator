@@ -112,5 +112,6 @@
     <ClInclude Include="sources\PPU.h">
       <Filter>Hardware</Filter>
     </ClInclude>
+    <ClInclude Include="sources\Common.h" />
   </ItemGroup>
 </Project>

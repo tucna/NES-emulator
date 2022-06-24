@@ -47,7 +47,7 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
   return data;
 }
 
-void Bus::ConnectRam(std::array<uint8_t, 2 * 1024>* ram)
+void Bus::ConnectRam(RAM2KB* ram)
 {
   m_ram = ram;
 }
