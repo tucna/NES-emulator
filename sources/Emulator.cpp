@@ -1,6 +1,8 @@
 #define T_PGE_APPLICATION
 #include "engine/tPixelGameEngine.h"
 
+#include <iomanip>
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx11.h"
@@ -39,6 +41,7 @@ Emulator::Emulator()
   m_oscillator = make_unique<Oscillator>(m_cpu.get(), m_ppu.get());
 
   // Create cartridge
+  /*
   {
     //m_cartridge = std::make_unique<Cartridge>("roms/smb.nes");
     m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
@@ -55,7 +58,7 @@ Emulator::Emulator()
     // Reset
     m_cpu->Reset();
   }
-  /*
+  */
   {
     m_cartridge = std::make_unique<Cartridge>("");
 
@@ -65,7 +68,6 @@ Emulator::Emulator()
     // Set PC for cartridge
     m_cpu->SetProgramCounter(0x4020);
   }
-  */
 
   // Extract dissassembly
   m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
@@ -239,25 +241,36 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
 
-  // TODO extend memory window
-  char page[3] = "00";
-
   ImGui::Begin("Memory window 1");
-  //ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", page, 3, ImGuiInputTextFlags_CharsHexadecimal);
+  char page[] = "40";
+  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", page, 3, ImGuiInputTextFlags_CharsHexadecimal);
+  uint16_t addressPage;
+  std::istringstream(page) >> std::hex >> addressPage;
+
+  addressPage = addressPage << 8;
+
   for (int row = 0; row < 16; row++)
   {
     stringstream memoryRow;
-    memoryRow << "$" << std::hex << page[0] << std::hex << page[1] << std::hex << row << "0" << ":";
+    memoryRow << "$" << uppercase << std::hex << page[0] << page[1] << row << "0" << ":";
 
     ImGui::Text(memoryRow.str().c_str());
 
-    memoryRow.str(std::string());
-
     for (int column = 0; column < 16; column++)
-      memoryRow << "00 ";
+    {
+      uint16_t address = (addressPage + 16 * row) + column;
+      uint8_t data = m_bus->Read(address, true);
+      memoryRow.str(std::string());
 
-    ImGui::SameLine();
-    ImGui::TextColored(m_darkGrayColor, memoryRow.str().c_str());
+      memoryRow << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << +data; // +data for easy number conversion
+
+      ImGui::SameLine();
+
+      if (data == 0)
+        ImGui::TextColored(m_darkGrayColor, memoryRow.str().c_str());
+      else
+        ImGui::TextColored(m_greenColor, memoryRow.str().c_str());
+    }
   }
   ImGui::End();
 
