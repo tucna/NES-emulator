@@ -40,6 +40,7 @@ Emulator::Emulator()
 
   // Create cartridge
   {
+    //m_cartridge = std::make_unique<Cartridge>("roms/smb.nes");
     m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
 
     // Startup routine
@@ -114,6 +115,31 @@ bool Emulator::OnUserCreate()
   subResource.SysMemSlicePitch = 0;
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP2);
   d3dDevice->CreateShaderResourceView(m_textureP2.Get(), &srvDesc, &m_patternTable2View);
+
+  // Palette
+  desc = {};
+  desc.Width = 4;
+  desc.Height = 1;
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  desc.SampleDesc.Count = 1;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+  desc.CPUAccessFlags = 0;
+
+  subResource = {};
+  subResource.pSysMem = m_ppu->GetPalleteColors().GetData();
+  subResource.SysMemPitch = desc.Width * 4;
+  subResource.SysMemSlicePitch = 0;
+  d3dDevice->CreateTexture2D(&desc, &subResource, &m_texturePalette);
+
+  srvDesc = {};
+  srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+  srvDesc.Texture2D.MipLevels = desc.MipLevels;
+  srvDesc.Texture2D.MostDetailedMip = 0;
+  d3dDevice->CreateShaderResourceView(m_texturePalette.Get(), &srvDesc, &m_paletteView);
 
   return true;
 }
@@ -243,6 +269,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 
   ImGui::Begin("Pattern table");
   ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128)); ImGui::SameLine(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(128, 128));
+  ImGui::Image((void*)m_paletteView.Get(), ImVec2(7 * 4, 7));
   ImGui::End();
 
   ImGui::Render();

@@ -47,6 +47,7 @@ public:
 
   tDX::Sprite& GetScreen() { return m_sprScreen; }
   tDX::Sprite& GetPatternTable(uint8_t i, uint8_t palette);
+  tDX::Sprite& GetPalleteColors();
 
   // Communication with Main Bus
   uint8_t ReadByCPU(uint16_t addr, bool rdonly = false);
@@ -157,6 +158,9 @@ private:
   tDX::Pixel m_palScreen[0x40];
   tDX::Sprite m_sprScreen;
   tDX::Sprite m_sprPatternTable[2];
+
+  // TODO debug
+  tDX::Sprite m_palette;
 
   Cartridge* m_cartridge;
 };

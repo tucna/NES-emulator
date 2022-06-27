@@ -1,3 +1,5 @@
+#include "engine/tPixelGameEngine.h"
+
 #include "Bus.h"
 #include "Cartridge.h"
 #include "Common.h"
@@ -9,6 +11,7 @@ PPU::PPU() :
   m_scanline(0),
   m_sprScreen(256, 240),
   m_sprPatternTable{{128, 128}, {128, 128}},
+  m_palette(4, 1),
   m_nmi(false),
   m_fineX(0),
   m_addressLatch(0),
@@ -318,6 +321,22 @@ tDX::Sprite& PPU::GetPatternTable(uint8_t i, uint8_t palette)
 
   // Finally return the updated sprite representing the pattern table
   return m_sprPatternTable[i];
+}
+
+tDX::Sprite& PPU::GetPalleteColors()
+{
+  uint8_t palette = 0;
+  /* TODO
+  m_palette.SetPixel(0, 0, tDX::RED);
+  m_palette.SetPixel(1, 0, tDX::BLUE);
+  m_palette.SetPixel(2, 0, tDX::GREEN);
+  m_palette.SetPixel(3, 0, tDX::YELLOW);
+  */
+
+  for (int index = 0; index < 4; index++)
+    m_palette.SetPixel(index, 0, GetColourFromPaletteRam(1, index));
+
+  return m_palette;
 }
 
 uint8_t PPU::ReadByCPU(uint16_t addr, bool rdonly)
