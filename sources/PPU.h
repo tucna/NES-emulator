@@ -52,7 +52,7 @@ public:
 
   tDX::Sprite& GetScreen() { return m_sprScreen; }
   tDX::Sprite& GetPatternTable(uint8_t i, uint8_t palette);
-  tDX::Sprite& GetPalleteColors();
+  tDX::Sprite& GetPalleteColors(uint8_t part);
 
   // Communication with Main Bus
   uint8_t ReadByCPU(uint16_t addr, bool rdonly = false);

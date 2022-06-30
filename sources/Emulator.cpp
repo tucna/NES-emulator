@@ -120,7 +120,7 @@ bool Emulator::OnUserCreate()
 
   // Palette
   desc = {};
-  desc.Width = 4;
+  desc.Width = 4 * 4 + 3;
   desc.Height = 1;
   desc.MipLevels = 1;
   desc.ArraySize = 1;
@@ -131,17 +131,31 @@ bool Emulator::OnUserCreate()
   desc.CPUAccessFlags = 0;
 
   subResource = {};
-  subResource.pSysMem = m_ppu->GetPalleteColors().GetData();
+  subResource.pSysMem = m_ppu->GetPalleteColors(0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
   subResource.SysMemSlicePitch = 0;
-  d3dDevice->CreateTexture2D(&desc, &subResource, &m_texturePalette);
+  d3dDevice->CreateTexture2D(&desc, &subResource, &m_texturePaletteBcg);
 
   srvDesc = {};
   srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
   srvDesc.Texture2D.MipLevels = desc.MipLevels;
   srvDesc.Texture2D.MostDetailedMip = 0;
-  d3dDevice->CreateShaderResourceView(m_texturePalette.Get(), &srvDesc, &m_paletteView);
+  d3dDevice->CreateShaderResourceView(m_texturePaletteBcg.Get(), &srvDesc, &m_paletteBcgView);
+
+  // Frg
+  subResource = {};
+  subResource.pSysMem = m_ppu->GetPalleteColors(1).GetData();
+  subResource.SysMemPitch = desc.Width * 4;
+  subResource.SysMemSlicePitch = 0;
+  d3dDevice->CreateTexture2D(&desc, &subResource, &m_texturePaletteFrg);
+
+  srvDesc = {};
+  srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+  srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+  srvDesc.Texture2D.MipLevels = desc.MipLevels;
+  srvDesc.Texture2D.MostDetailedMip = 0;
+  d3dDevice->CreateShaderResourceView(m_texturePaletteFrg.Get(), &srvDesc, &m_paletteFrgView);
 
   return true;
 }
@@ -293,9 +307,17 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   tDX::Sprite& sprite2 = m_ppu->GetPatternTable(1, 0);
   GetContext()->UpdateSubresource(m_textureP2.Get(), 0, NULL, sprite2.GetData(), sprite2.width * 4, 0);
 
+  tDX::Sprite& sprite3 = m_ppu->GetPalleteColors(0); // background
+  GetContext()->UpdateSubresource(m_texturePaletteBcg.Get(), 0, NULL, sprite3.GetData(), sprite3.width * 4, 0);
+
+  tDX::Sprite& sprite4 = m_ppu->GetPalleteColors(1); // foreground
+  GetContext()->UpdateSubresource(m_texturePaletteFrg.Get(), 0, NULL, sprite4.GetData(), sprite4.width * 4, 0);
+
   ImGui::Begin("Pattern table");
-  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(128, 128)); ImGui::SameLine(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(128, 128));
-  ImGui::Image((void*)m_paletteView.Get(), ImVec2(7 * 4, 7));
+  ImGui::Columns(2);
+  ImGui::SetColumnWidth(0, 148);
+  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(133, 133)); ImGui::NextColumn(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(133, 133)); ImGui::NextColumn();// original size is 128x128
+  ImGui::Image((void*)m_paletteBcgView.Get(), ImVec2(7 * ((4 * 4) + 3) /*8 cells + 7 spaces*/, 7)); ImGui::NextColumn(); ImGui::Image((void*)m_paletteFrgView.Get(), ImVec2(7 * ((4 * 4) + 3) /*8 cells + 7 spaces*/, 7));
   ImGui::End();
 
   ImGui::Render();

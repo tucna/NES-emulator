@@ -11,7 +11,7 @@ PPU::PPU() :
   m_scanline(0),
   m_sprScreen(256, 240),
   m_sprPatternTable{ {128, 128}, {128, 128} },
-  m_palette(4, 1),
+  m_palette((8 * 4) + 7, 1),
   m_nmi(false),
   m_fineX(0),
   m_addressLatch(0),
@@ -668,18 +668,26 @@ tDX::Sprite& PPU::GetPatternTable(uint8_t i, uint8_t palette)
   return m_sprPatternTable[i];
 }
 
-tDX::Sprite& PPU::GetPalleteColors()
+tDX::Sprite& PPU::GetPalleteColors(uint8_t part)
 {
-  uint8_t palette = 0;
-  /* TODO
-  m_palette.SetPixel(0, 0, tDX::RED);
-  m_palette.SetPixel(1, 0, tDX::BLUE);
-  m_palette.SetPixel(2, 0, tDX::GREEN);
-  m_palette.SetPixel(3, 0, tDX::YELLOW);
-  */
+  uint8_t from = part == 0 ? 0 : 4;
+  uint8_t to = part == 0 ? 4 : 8;
 
-  for (int index = 0; index < 4; index++)
-    m_palette.SetPixel(index, 0, GetColourFromPaletteRam(1, index));
+
+  uint8_t currentCell = 0;
+
+  for (uint8_t palette = from; palette < to; palette++)
+  {
+    for (int index = 0; index < 4; index++)
+    {
+      m_palette.SetPixel(currentCell, 0, GetColourFromPaletteRam(palette, index));
+      currentCell++;
+    }
+
+    m_palette.SetPixel(currentCell, 0, tDX::BLANK);
+
+    currentCell++;
+  }
 
   return m_palette;
 }

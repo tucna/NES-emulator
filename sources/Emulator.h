@@ -43,11 +43,14 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable1View;
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable2View;
-  Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_paletteView;
+  Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_paletteBcgView;
+  Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_paletteFrgView;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP1;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP2;
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texturePalette;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texturePaletteBcg;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texturePaletteFrg;
+
 
   // Disassembly
   std::map<uint16_t, std::string> m_asm;
