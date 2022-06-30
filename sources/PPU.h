@@ -34,8 +34,13 @@ public:
   ~PPU() {}
 
   void Clock();
+  void Reset();
+
 
   bool IsFrameCompleted() const { return m_frameComplete; }
+
+  // Debug
+  void SetFrameNotCompleted() { m_frameComplete = false; }
 
   // Requests
   bool NMI() { return m_nmi; }
@@ -64,87 +69,80 @@ private:
   {
     struct
     {
-      uint8_t Nx : 1; // nametable select
-      uint8_t Ny : 1; // nametable select
-      uint8_t I : 1; // increment mode
-      uint8_t S : 1; // sprite tile select
-      uint8_t B : 1; // background tile select
-      uint8_t H : 1; // sprite height
-      uint8_t P : 1; // PPU master/slave
-      uint8_t V : 1; // NMI enable
+      uint8_t unused : 5;
+      uint8_t sprite_overflow : 1;
+      uint8_t sprite_zero_hit : 1;
+      uint8_t vertical_blank : 1;
     };
 
     uint8_t reg;
-  } PPUCTRL;
+  } status;
+
 
   union
   {
     struct
     {
-      uint8_t Gr : 1; // greyscale
-      uint8_t m : 1; // background left column enable
-      uint8_t M : 1; // sprite left column enable
-      uint8_t b : 1; // background enable
-      uint8_t s : 1; // sprite enable
-      uint8_t R : 1; // color emphasis R
-      uint8_t G : 1; // color emphasis G
-      uint8_t B : 1; // color emphasis B
+      uint8_t grayscale : 1;
+      uint8_t render_background_left : 1;
+      uint8_t render_sprites_left : 1;
+      uint8_t render_background : 1;
+      uint8_t render_sprites : 1;
+      uint8_t enhance_red : 1;
+      uint8_t enhance_green : 1;
+      uint8_t enhance_blue : 1;
     };
 
     uint8_t reg;
-  } PPUMASK;
+  } mask;
 
   union
   {
     struct
     {
-      uint8_t unused : 5; // read resets write pair for $2005 / $2006
-      uint8_t O : 1; // sprite overflow
-      uint8_t S : 1; // sprite 0 hit
-      uint8_t V : 1; // vblank
+      uint8_t nametable_x : 1;
+      uint8_t nametable_y : 1;
+      uint8_t increment_mode : 1;
+      uint8_t pattern_sprite : 1;
+      uint8_t pattern_background : 1;
+      uint8_t sprite_size : 1;
+      uint8_t slave_mode : 1; // unused
+      uint8_t enable_nmi : 1;
     };
 
     uint8_t reg;
-  } PPUSTATUS;
+  } control;
 
-  union LoopyRegister
+  union loopy_register
   {
+    // Credit to Loopy for working this out :D
     struct
     {
 
-      uint16_t coarseX : 5;
-      uint16_t coarseY : 5;
-      uint16_t nametableX : 1;
-      uint16_t nametableY : 1;
-      uint16_t fineY : 3;
+      uint16_t coarse_x : 5;
+      uint16_t coarse_y : 5;
+      uint16_t nametable_x : 1;
+      uint16_t nametable_y : 1;
+      uint16_t fine_y : 3;
       uint16_t unused : 1;
     };
 
-    uint16_t reg;
+    uint16_t reg = 0x0000;
   };
 
-  struct
-  {
-    uint8_t nextTileId;
-    uint8_t nextTileAttr;
-    uint8_t nextTileLsb;
-    uint8_t nextTileMsb;
 
-    uint16_t shifterPatternLo;
-    uint16_t shifterPatternHi;
-    uint16_t shifterAttrLo;
-    uint16_t shifterAttribHi;
-  } m_backgroudAttributes;
-
-  LoopyRegister m_vramAddr;
-  LoopyRegister m_tranAddr;
+  loopy_register m_vram_addr; // Active "pointer" address into nametable to extract background tile info
+  loopy_register m_tram_addr; // Temporary store of information to be "transferred" into "pointer" at various times
 
   // Pixel offset horizontally
   uint8_t m_fineX;
 
   // Internal communications
-	uint8_t m_addressLatch;
-	uint8_t m_dataBuffer;
+  uint8_t m_address_latch = 0x00;
+  uint8_t m_ppu_data_buffer = 0x00;
+
+  uint8_t m_addressLatch;
+  uint8_t m_dataBuffer;
 
   bool m_frameComplete;
   bool m_nmi;
@@ -152,7 +150,18 @@ private:
   int16_t m_scanline;
   int16_t m_cycle;
 
+  // Background rendering
+  uint8_t bg_next_tile_id = 0x00;
+  uint8_t bg_next_tile_attrib = 0x00;
+  uint8_t bg_next_tile_lsb = 0x00;
+  uint8_t bg_next_tile_msb = 0x00;
+  uint16_t bg_shifter_pattern_lo = 0x0000;
+  uint16_t bg_shifter_pattern_hi = 0x0000;
+  uint16_t bg_shifter_attrib_lo = 0x0000;
+  uint16_t bg_shifter_attrib_hi = 0x0000;
+
   uint8_t m_tblName[2][1024];
+  uint8_t m_tblPattern[2][4096];
   uint8_t m_tblPalette[32];
 
   tDX::Pixel m_palScreen[0x40];

@@ -41,9 +41,7 @@ Emulator::Emulator()
   m_oscillator = make_unique<Oscillator>(m_cpu.get(), m_ppu.get());
 
   // Create cartridge
-  /*
   {
-    //m_cartridge = std::make_unique<Cartridge>("roms/smb.nes");
     m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
 
     // Startup routine
@@ -56,9 +54,11 @@ Emulator::Emulator()
     m_ppu->ConnectCartridge(m_cartridge.get());
 
     // Reset
+    // TODO - more massive reset should happen?
     m_cpu->Reset();
+    m_ppu->Reset();
   }
-  */
+  /*
   {
     m_cartridge = std::make_unique<Cartridge>("");
 
@@ -68,7 +68,7 @@ Emulator::Emulator()
     // Set PC for cartridge
     m_cpu->SetProgramCounter(0x4020);
   }
-
+  */
   // Extract dissassembly
   m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
 }
@@ -163,9 +163,21 @@ bool Emulator::OnUserUpdate(float fElapsedTime)
 
   // Handle debug
   if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
+  if (GetKey(tDX::Key::SPACE).bPressed) m_isRunning = !m_isRunning;
 
   // Handle hardware
-  m_oscillator->Input(fElapsedTime);
+  if (m_isRunning)
+  {
+    m_oscillator->Input(fElapsedTime);
+  }
+  else
+  {
+    if (GetKey(tDX::Key::C).bPressed)
+      m_oscillator->TicksForCurrentInstruction();
+
+    if (GetKey(tDX::Key::F).bPressed)
+      m_oscillator->TicksForCurrentFrame();
+  }
 
   // Handle output to television
   Clear(tDX::BLACK);
@@ -242,17 +254,18 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::End();
 
   ImGui::Begin("Memory window 1");
-  char page[] = "40";
-  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", page, 3, ImGuiInputTextFlags_CharsHexadecimal);
+  char defaultPage[] = "40";
+  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", defaultPage, 3, ImGuiInputTextFlags_CharsHexadecimal);
+
   uint16_t addressPage;
-  std::istringstream(page) >> std::hex >> addressPage;
+  std::istringstream(defaultPage) >> std::hex >> addressPage;
 
   addressPage = addressPage << 8;
 
   for (int row = 0; row < 16; row++)
   {
     stringstream memoryRow;
-    memoryRow << "$" << uppercase << std::hex << page[0] << page[1] << row << "0" << ":";
+    memoryRow << "$" << uppercase << std::hex << defaultPage << row << "0" << ":";
 
     ImGui::Text(memoryRow.str().c_str());
 

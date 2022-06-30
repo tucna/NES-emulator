@@ -61,6 +61,36 @@ void CPU::Reset()
   m_cycles = 8;
 }
 
+void CPU::IRQ()
+{
+  // If interrupts are allowed
+  if (GetFlag(I) == 0)
+  {
+    // Push the program counter to the stack. It's 16-bits dont
+    // forget so that takes two pushes
+    Write(0x0100 + m_stackPointer, (m_programCounter >> 8) & 0x00FF);
+    m_stackPointer--;
+    Write(0x0100 + m_stackPointer, m_programCounter & 0x00FF);
+    m_stackPointer--;
+
+    // Then Push the status register to the stack
+    SetFlag(B, 0);
+    SetFlag(U, 1);
+    SetFlag(I, 1);
+    Write(0x0100 + m_stackPointer, m_status);
+    m_stackPointer--;
+
+    // Read new program counter location from fixed address
+    m_addrAbs = 0xFFFE;
+    uint16_t lo = Read(m_addrAbs + 0);
+    uint16_t hi = Read(m_addrAbs + 1);
+    m_programCounter = (hi << 8) | lo;
+
+    // IRQs take time
+    m_cycles = 7;
+  }
+}
+
 void CPU::Clock()
 {
   if (m_cycles == 0)
@@ -216,7 +246,7 @@ std::map<uint16_t, std::string> CPU::Disassemble(uint16_t addrStart, uint16_t ad
     else if (m_lookup[opcode].addrmode == &CPU::REL)
     {
       value = m_bus->Read(addr, true); addr++;
-      sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
+      sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}"; // Offset (value) can range from -128 to +127 thus the (int8_t) cast.
     }
 
     mapLines[lineAddr] = sInst;

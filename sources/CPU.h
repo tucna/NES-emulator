@@ -41,12 +41,15 @@ public:
   ~CPU() {}
 
   void Reset();
+  void IRQ();
   void NMI();
   void Clock();
 
   void ConnectToBus(Bus* bus) { m_bus = bus; }
 
   std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);
+
+  bool IsInstructionCompleted() const { return m_cycles == 0; }
 
   bool GetB0() const { return m_status & Flags::C; }
   bool GetB1() const { return m_status & Flags::Z; }
@@ -56,8 +59,6 @@ public:
   bool GetB5() const { return m_status & Flags::U; }
   bool GetB6() const { return m_status & Flags::V; }
   bool GetB7() const { return m_status & Flags::N; }
-
-  bool IsCompleted() { return m_cycles == 0; }
 
   uint8_t GetAcc() const { return m_a; }
   uint8_t GetRegX() const { return m_x; }

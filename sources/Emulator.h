@@ -39,6 +39,7 @@ private:
 
   // Debug UI variables
   bool m_showUI = false;
+  bool m_isRunning = false;
 
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable1View;
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable2View;

@@ -13,6 +13,8 @@ public:
   ~Oscillator();
 
   void Input(float timeStep);
+  void TicksForCurrentInstruction();
+  void TicksForCurrentFrame();
 
 private:
   void Tick();

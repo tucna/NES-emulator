@@ -27,7 +27,29 @@ void Oscillator::Input(float timeStep)
       Tick();
     }
     while (!m_ppu->IsFrameCompleted());
+
+    // Reset frame completion flag
+    m_ppu->SetFrameNotCompleted();
   }
+}
+
+void Oscillator::TicksForCurrentInstruction()
+{
+  // Clock enough times to execute a whole CPU instruction
+  do { Tick(); } while (!m_cpu->IsInstructionCompleted());
+  // CPU clock runs slower than system clock, so it may be
+  // still need some ticks to finish PPU run.
+  do { Tick(); } while (m_cpu->IsInstructionCompleted());
+}
+
+void Oscillator::TicksForCurrentFrame()
+{
+  // Clock enough times to draw a single frame
+  do { Tick(); } while (!m_ppu->IsFrameCompleted());
+  // Use residual clock cycles to complete current instruction
+  do { Tick(); } while (!m_cpu->IsInstructionCompleted());
+  // Reset frame completion flag
+  m_ppu->SetFrameNotCompleted();
 }
 
 void Oscillator::Tick()
