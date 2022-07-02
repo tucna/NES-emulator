@@ -285,7 +285,7 @@ namespace tDX // tucna - DirectX
     PixelGameEngine();
 
   public:
-    tDX::rcode	Construct(uint32_t screen_w, uint32_t screen_h, uint32_t pixel_w, uint32_t pixel_h, bool full_screen = false, bool vsync = false);
+    tDX::rcode	Construct(uint32_t screen_w, uint32_t screen_h, uint32_t windowBorder_w, uint32_t windowBorder_h, uint32_t pixel_w, uint32_t pixel_h, bool full_screen = false, bool vsync = false);
     tDX::rcode	Start();
 
   public: // Override Interfaces
@@ -401,6 +401,8 @@ namespace tDX // tucna - DirectX
     float		fBlendFactor = 1.0f;
     uint32_t	nScreenWidth = 256;
     uint32_t	nScreenHeight = 240;
+    uint32_t  nWindowBorderWidth = 0;
+    uint32_t  nWindowBorderHeight = 0;
     uint32_t	nPixelWidth = 4;
     uint32_t	nPixelHeight = 4;
     int32_t		nMousePosX = 0;
@@ -763,7 +765,7 @@ namespace tDX
     {
       sResourceFile e;
       e.nSize = (uint32_t)_gfs::file_size(file);
-      e.nOffset = 0; // Unknown at this stage			
+      e.nOffset = 0; // Unknown at this stage
       mapFiles[file] = e;
       return true;
     }
@@ -909,10 +911,12 @@ namespace tDX
     tDX::PGEX::pge = this;
   }
 
-  tDX::rcode PixelGameEngine::Construct(uint32_t screen_w, uint32_t screen_h, uint32_t pixel_w, uint32_t pixel_h, bool full_screen, bool vsync)
+  tDX::rcode PixelGameEngine::Construct(uint32_t screen_w, uint32_t screen_h, uint32_t windowBorder_w, uint32_t windowBorder_h, uint32_t pixel_w, uint32_t pixel_h, bool full_screen, bool vsync)
   {
     nScreenWidth = screen_w;
     nScreenHeight = screen_h;
+    nWindowBorderWidth = windowBorder_w;
+    nWindowBorderHeight = windowBorder_h;
     nPixelWidth = pixel_w;
     nPixelHeight = pixel_h;
     bFullScreen = full_screen;
@@ -1935,8 +1939,8 @@ namespace tDX
 
     RegisterClass(&wc);
 
-    nWindowWidth = (LONG)nScreenWidth * (LONG)nPixelWidth;
-    nWindowHeight = (LONG)nScreenHeight * (LONG)nPixelHeight;
+    nWindowWidth = (LONG)nScreenWidth * (LONG)nPixelWidth + 2 * nWindowBorderWidth;
+    nWindowHeight = (LONG)nScreenHeight * (LONG)nPixelHeight + 2 * nWindowBorderHeight;
 
     // Define window furniture
     DWORD dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;

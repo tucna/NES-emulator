@@ -268,18 +268,17 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::End();
 
   ImGui::Begin("Memory window 1");
-  char defaultPage[] = "40";
-  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", defaultPage, 3, ImGuiInputTextFlags_CharsHexadecimal);
+  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", m_defaultPage, 3, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
   uint16_t addressPage;
-  std::istringstream(defaultPage) >> std::hex >> addressPage;
+  std::istringstream(m_defaultPage) >> std::hex >> addressPage;
 
   addressPage = addressPage << 8;
 
   for (int row = 0; row < 16; row++)
   {
     stringstream memoryRow;
-    memoryRow << "$" << uppercase << std::hex << defaultPage << row << "0" << ":";
+    memoryRow << "$" << uppercase << std::hex << m_defaultPage << row << "0" << ":";
 
     ImGui::Text(memoryRow.str().c_str());
 

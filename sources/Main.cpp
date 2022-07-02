@@ -6,7 +6,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
   Emulator emulator;
 
-  if (emulator.Construct(500, 480, 1, 1))
+  if (emulator.Construct(500, 480, 250, 0, 1, 1))
     emulator.Start();
 
   return 0;
