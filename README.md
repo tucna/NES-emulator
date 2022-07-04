@@ -5,7 +5,7 @@ Home made NES emulator in C++ and DirectX 11 backend. *Still work in progress bu
   <img src="doc/sc1.jpg">
 </p>
 
-The project is built on [tPixelGameEngine](https://github.com/tucna/tPixelGameEngine) and [Dear ImGui](https://github.com/ocornut/imgui) for debug purposes. The debug windows show internal state of CPU, disassembled program and GPU pattern tables.
+The project is built on [tPixelGameEngine](https://github.com/tucna/tPixelGameEngine) and [Dear ImGui](https://github.com/ocornut/imgui) for debug purposes. The debug windows show internal state of CPU, disassembled program, GPU pattern tables and palettes and memory starting at specified page.
 
 # Controls
 - `X/Z/S/A` - action buttons.
