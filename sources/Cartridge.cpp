@@ -14,7 +14,7 @@ Cartridge::Cartridge(const std::string& file)
   if (file.size() == 0) // debug cartridge
   {
     m_debugCartridge = true;
-    m_PRGMemory.resize(0xBFE0);
+    m_PRG_ROM.resize(0xBFE0);
     size_t offset = 0;
 
     std::stringstream ss;
@@ -24,43 +24,31 @@ Cartridge::Cartridge(const std::string& file)
     {
       std::string b;
       ss >> b;
-      m_PRGMemory[offset++] = (uint8_t)std::stoul(b, nullptr, 16);
+      m_PRG_ROM[offset++] = (uint8_t)std::stoul(b, nullptr, 16);
     }
   }
   else
   {
-    struct Header
-    {
-      char name[4];
-      uint8_t prgRomChunks;
-      uint8_t chrRomChunks;
-      uint8_t mapper1;
-      uint8_t mapper2;
-      uint8_t prgRamSize;
-      uint8_t tvSystem1;
-      uint8_t tvSystem2;
-      char unused[5];
-    } header;
-
     m_imageValid = false;
 
     std::ifstream ifs;
     ifs.open(file, std::ifstream::binary);
+
     if (ifs.is_open())
     {
       // Read file header
-      ifs.read((char*)&header, sizeof(Header));
+      ifs.read((char*)&m_header, sizeof(Header));
 
       // If a "trainer" exists we just need to read past
       // it before we get to the good stuff
-      if (header.mapper1 & 0x04)
+      if (m_header.flags6.trainer)
         ifs.seekg(512, std::ios_base::cur);
 
       // Determine Mapper ID
-      m_mapperID = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
-      m_mirror = (header.mapper1 & 0x01) ? Mirror::Vertical : Mirror::Horizontal;
+      m_mapperID = (m_header.flags7.higher_nibble_mapper_ID << 4) | m_header.flags6.lower_nibble_mapper_ID;
+      m_mirroring = m_header.flags6.mirroring ? Mirroring::Vertical : Mirroring::Horizontal;
 
-      // "Discover" File Format
+      // TODO correct variant handling
       uint8_t fileType = 1;
 
       if (fileType == 0)
@@ -68,15 +56,14 @@ Cartridge::Cartridge(const std::string& file)
         // TODO
       }
 
+      // If byte 7 AND $0C = $00, and bytes 12 - 15 are all 0, then iNES
       if (fileType == 1)
       {
-        m_PRGBanks = header.prgRomChunks;
-        m_PRGMemory.resize(m_PRGBanks * 16384); // 2MB
-        ifs.read((char*)m_PRGMemory.data(), m_PRGMemory.size());
+        m_PRG_ROM.resize(m_header.prgRomBanks * 16384); // 16kb
+        ifs.read((char*)m_PRG_ROM.data(), m_PRG_ROM.size());
 
-        m_CHRBanks = header.chrRomChunks;
-        m_CHRMemory.resize(m_CHRBanks * 8192); // 1MB
-        ifs.read((char*)m_CHRMemory.data(), m_CHRMemory.size());
+        m_CHR_ROM.resize(m_header.chrRomBanks * 8192); // 8b
+        ifs.read((char*)m_CHR_ROM.data(), m_CHR_ROM.size());
       }
 
       if (fileType == 2)
@@ -87,10 +74,11 @@ Cartridge::Cartridge(const std::string& file)
       // Load appropriate mapper
       switch (m_mapperID)
       {
-      case 0: m_mapper = std::make_unique<Mapper_000>(m_PRGBanks, m_CHRBanks); break;
+        case 0: m_mapper = std::make_unique<Mapper_000>(m_header.prgRomBanks, m_header.chrRomBanks); break;
       }
 
       m_imageValid = true;
+
       ifs.close();
     }
   }
@@ -101,14 +89,14 @@ void Cartridge::ReadByCPU(uint16_t addr, uint8_t& data)
   if (m_debugCartridge)
   {
     uint16_t cartridgeStart = 0x4020;
-    data = m_PRGMemory[addr - cartridgeStart];
+    data = m_PRG_ROM[addr - cartridgeStart];
   }
   else
   {
     uint32_t mappedAddr = 0;
 
     m_mapper->MapReadByCPU(addr, mappedAddr);
-    data = m_PRGMemory[mappedAddr];
+    data = m_PRG_ROM[mappedAddr];
   }
 }
 
@@ -117,20 +105,20 @@ void Cartridge::WriteByCPU(uint16_t addr, uint8_t data)
   if (m_debugCartridge)
   {
     uint16_t cartridgeStart = 0x4020;
-    m_PRGMemory[addr - cartridgeStart] = data;
+    m_PRG_ROM[addr - cartridgeStart] = data;
   }
   else
   {
     uint32_t mappedAddr = 0;
 
     m_mapper->MapWriteByCPU(addr, mappedAddr);
-    m_PRGMemory[mappedAddr] = data;
+    m_PRG_ROM[mappedAddr] = data;
   }
 }
 
 void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
 {
-  if (m_debugCartridge) // do nothing for PPU
+  if (m_debugCartridge || m_CHR_ROM.empty()) // do nothing for PPU
   {
     data = 0x00;
   }
@@ -139,13 +127,13 @@ void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
     uint32_t mappedAddr = 0;
 
     m_mapper->MapReadByPPU(addr, mappedAddr);
-    data = m_CHRMemory[mappedAddr];
+    data = m_CHR_ROM[mappedAddr];
   }
 }
 
 void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
 {
-  if (m_debugCartridge) // do nothing for PPU
+  if (m_debugCartridge || m_CHR_ROM.empty()) // do nothing for PPU
   {
     // TODO ?
   }
@@ -154,6 +142,6 @@ void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
     uint32_t mappedAddr = 0;
 
     m_mapper->MapWriteByPPU(addr, mappedAddr);
-    m_CHRMemory[mappedAddr] = data;
+    m_CHR_ROM[mappedAddr] = data;
   }
 }

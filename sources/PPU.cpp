@@ -878,7 +878,7 @@ uint8_t PPU::ReadByPPU(uint16_t addr, bool rdonly)
   {
     addr &= 0x0FFF;
 
-    if (m_cartridge->GetMirroring() == Cartridge::Mirror::Vertical)
+    if (m_cartridge->GetMirroring() == Cartridge::Mirroring::Vertical)
     {
       // Vertical
       if (addr >= 0x0000 && addr <= 0x03FF)
@@ -890,7 +890,7 @@ uint8_t PPU::ReadByPPU(uint16_t addr, bool rdonly)
       if (addr >= 0x0C00 && addr <= 0x0FFF)
         data = m_tblName[1][addr & 0x03FF];
     }
-    else if (m_cartridge->GetMirroring() == Cartridge::Mirror::Horizontal)
+    else if (m_cartridge->GetMirroring() == Cartridge::Mirroring::Horizontal)
     {
       // Horizontal
       if (addr >= 0x0000 && addr <= 0x03FF)
@@ -928,7 +928,7 @@ void PPU::WriteByPPU(uint16_t addr, uint8_t data)
   else if (addr >= 0x2000 && addr <= 0x3EFF)
   {
     addr &= 0x0FFF;
-    if (m_cartridge->GetMirroring() == Cartridge::Mirror::Vertical)
+    if (m_cartridge->GetMirroring() == Cartridge::Mirroring::Vertical)
     {
       // Vertical
       if (addr >= 0x0000 && addr <= 0x03FF)
@@ -940,7 +940,7 @@ void PPU::WriteByPPU(uint16_t addr, uint8_t data)
       if (addr >= 0x0C00 && addr <= 0x0FFF)
         m_tblName[1][addr & 0x03FF] = data;
     }
-    else if (m_cartridge->GetMirroring() == Cartridge::Mirror::Horizontal)
+    else if (m_cartridge->GetMirroring() == Cartridge::Mirroring::Horizontal)
     {
       // Horizontal
       if (addr >= 0x0000 && addr <= 0x03FF)

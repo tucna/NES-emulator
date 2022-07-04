@@ -42,7 +42,7 @@ Emulator::Emulator()
 
   // Create cartridge
   {
-    m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
+    m_cartridge = std::make_unique<Cartridge>("roms/cpu/branch_timing_tests/2.Backward_Branch.nes");
 
     // Startup routine
     if (!m_cartridge->IsImageValid())
@@ -256,7 +256,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 
   PrepareDisassembledCode(5);
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
-
+  /*
   ImGui::Begin("Disassembly");
   for (auto it = m_disassembledCode.begin(); it < middleDis; it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
@@ -266,19 +266,19 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
-
-  ImGui::Begin("Memory window 1");
-  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", m_defaultPage, 3, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+*/
+  ImGui::Begin("Memory window CPU range");
+  ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", m_defaultPageCPU, 3, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
   uint16_t addressPage;
-  std::istringstream(m_defaultPage) >> std::hex >> addressPage;
+  std::istringstream(m_defaultPageCPU) >> std::hex >> addressPage;
 
   addressPage = addressPage << 8;
 
   for (int row = 0; row < 16; row++)
   {
     stringstream memoryRow;
-    memoryRow << "$" << uppercase << std::hex << m_defaultPage << row << "0" << ":";
+    memoryRow << "$" << uppercase << std::hex << m_defaultPageCPU << row << "0" << ":";
 
     ImGui::Text(memoryRow.str().c_str());
 
