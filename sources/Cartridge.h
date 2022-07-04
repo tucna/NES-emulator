@@ -121,6 +121,7 @@ private:
 
   std::vector<uint8_t> m_PRG_ROM;
   std::vector<uint8_t> m_CHR_ROM;
+  std::vector<uint8_t> m_CHR_RAM;
 
   std::unique_ptr<Mapper> m_mapper;
 

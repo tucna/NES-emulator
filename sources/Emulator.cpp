@@ -253,10 +253,10 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatX.data()); ImGui::NextColumn();
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
-
+  /*
   PrepareDisassembledCode(5);
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
-  /*
+
   ImGui::Begin("Disassembly");
   for (auto it = m_disassembledCode.begin(); it < middleDis; it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());

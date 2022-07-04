@@ -59,11 +59,18 @@ Cartridge::Cartridge(const std::string& file)
       // If byte 7 AND $0C = $00, and bytes 12 - 15 are all 0, then iNES
       if (fileType == 1)
       {
-        m_PRG_ROM.resize(m_header.prgRomBanks * 16384); // 16kb
+        m_PRG_ROM.resize(m_header.prgRomBanks * 16384); // 16kB
         ifs.read((char*)m_PRG_ROM.data(), m_PRG_ROM.size());
 
-        m_CHR_ROM.resize(m_header.chrRomBanks * 8192); // 8b
-        ifs.read((char*)m_CHR_ROM.data(), m_CHR_ROM.size());
+        if (m_header.chrRomBanks > 0)
+        {
+          m_CHR_ROM.resize(m_header.chrRomBanks * 8192); // 8B
+          ifs.read((char*)m_CHR_ROM.data(), m_CHR_ROM.size());
+        }
+        else // if there is 0 prg rom banks in use, use RAM instead
+        {
+          m_CHR_RAM.resize(8192); // 8B
+        }
       }
 
       if (fileType == 2)
@@ -118,7 +125,7 @@ void Cartridge::WriteByCPU(uint16_t addr, uint8_t data)
 
 void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
 {
-  if (m_debugCartridge || m_CHR_ROM.empty()) // do nothing for PPU
+  if (m_debugCartridge) // do nothing for PPU
   {
     data = 0x00;
   }
@@ -127,13 +134,17 @@ void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
     uint32_t mappedAddr = 0;
 
     m_mapper->MapReadByPPU(addr, mappedAddr);
-    data = m_CHR_ROM[mappedAddr];
+
+    if (m_header.chrRomBanks == 0)
+      data = m_CHR_RAM[mappedAddr];
+    else
+      data = m_CHR_ROM[mappedAddr];
   }
 }
 
 void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
 {
-  if (m_debugCartridge || m_CHR_ROM.empty()) // do nothing for PPU
+  if (m_debugCartridge) // do nothing for PPU
   {
     // TODO ?
   }
@@ -142,6 +153,10 @@ void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
     uint32_t mappedAddr = 0;
 
     m_mapper->MapWriteByPPU(addr, mappedAddr);
-    m_CHR_ROM[mappedAddr] = data;
+
+    if (m_header.chrRomBanks == 0)
+      m_CHR_RAM[mappedAddr] = data;
+    else
+      m_CHR_ROM[mappedAddr] = data;
   }
 }
