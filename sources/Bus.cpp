@@ -40,7 +40,6 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
   }
   else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge
   {
-    // Not sure if first address should not be 0x8000 to skip the header bits
     m_cartridge->ReadByCPU(addr, data);
   }
 

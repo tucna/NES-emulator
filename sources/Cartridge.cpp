@@ -13,12 +13,11 @@ Cartridge::Cartridge(const std::string& file)
 {
   if (file.size() == 0) // debug cartridge
   {
-    m_debugCartridge = true;
     m_PRG_ROM.resize(0xBFE0);
     size_t offset = 0;
 
     std::stringstream ss;
-    ss << "A2 0A 8E 00 00 A2 03 8E 01 00 AC 00 00 A9 00 18 6D 01 00 88 D0 FA 8D 02 00 EA 4C 39 40";
+    ss << "A2 0A 8E 00 00 A2 03 8E 01 00 AC 00 00 A9 00 18 6D 01 00 88 D0 FA 8D 02 00 EA 4C 19 80";
 
     while (!ss.eof())
     {
@@ -26,6 +25,9 @@ Cartridge::Cartridge(const std::string& file)
       ss >> b;
       m_PRG_ROM[offset++] = (uint8_t)std::stoul(b, nullptr, 16);
     }
+
+    m_mapper = std::make_unique<Mapper_000>(m_header.prgRomBanks, m_header.chrRomBanks);
+    m_CHR_RAM.resize(8192, 0); // 8B
   }
   else
   {
@@ -93,70 +95,40 @@ Cartridge::Cartridge(const std::string& file)
 
 void Cartridge::ReadByCPU(uint16_t addr, uint8_t& data)
 {
-  if (m_debugCartridge)
-  {
-    uint16_t cartridgeStart = 0x4020;
-    data = m_PRG_ROM[addr - cartridgeStart];
-  }
-  else
-  {
-    uint32_t mappedAddr = 0;
+  uint32_t mappedAddr = 0;
 
-    m_mapper->MapReadByCPU(addr, mappedAddr);
-    data = m_PRG_ROM[mappedAddr];
-  }
+  m_mapper->MapReadByCPU(addr, mappedAddr);
+  data = m_PRG_ROM[mappedAddr];
 }
 
 void Cartridge::WriteByCPU(uint16_t addr, uint8_t data)
 {
-  if (m_debugCartridge)
-  {
-    uint16_t cartridgeStart = 0x4020;
-    m_PRG_ROM[addr - cartridgeStart] = data;
-  }
-  else
-  {
-    uint32_t mappedAddr = 0;
+  uint32_t mappedAddr = 0;
 
-    m_mapper->MapWriteByCPU(addr, mappedAddr);
-    m_PRG_ROM[mappedAddr] = data;
-  }
+  m_mapper->MapWriteByCPU(addr, mappedAddr);
+  m_PRG_ROM[mappedAddr] = data;
 }
 
 void Cartridge::ReadByPPU(uint16_t addr, uint8_t& data)
 {
-  if (m_debugCartridge) // do nothing for PPU
-  {
-    data = 0x00;
-  }
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapReadByPPU(addr, mappedAddr);
+
+  if (m_header.chrRomBanks == 0)
+    data = m_CHR_RAM[mappedAddr];
   else
-  {
-    uint32_t mappedAddr = 0;
-
-    m_mapper->MapReadByPPU(addr, mappedAddr);
-
-    if (m_header.chrRomBanks == 0)
-      data = m_CHR_RAM[mappedAddr];
-    else
-      data = m_CHR_ROM[mappedAddr];
-  }
+    data = m_CHR_ROM[mappedAddr];
 }
 
 void Cartridge::WriteByPPU(uint16_t addr, uint8_t data)
 {
-  if (m_debugCartridge) // do nothing for PPU
-  {
-    // TODO ?
-  }
+  uint32_t mappedAddr = 0;
+
+  m_mapper->MapWriteByPPU(addr, mappedAddr);
+
+  if (m_header.chrRomBanks == 0)
+    m_CHR_RAM[mappedAddr] = data;
   else
-  {
-    uint32_t mappedAddr = 0;
-
-    m_mapper->MapWriteByPPU(addr, mappedAddr);
-
-    if (m_header.chrRomBanks == 0)
-      m_CHR_RAM[mappedAddr] = data;
-    else
-      m_CHR_ROM[mappedAddr] = data;
-  }
+    m_CHR_ROM[mappedAddr] = data;
 }

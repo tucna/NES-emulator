@@ -66,7 +66,7 @@ Emulator::Emulator()
     m_ppu->ConnectCartridge(m_cartridge.get());
 
     // Set PC for cartridge
-    m_cpu->SetProgramCounter(0x4020);
+    m_cpu->SetProgramCounter(0x8000);
   }
   */
   // Extract dissassembly

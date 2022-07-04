@@ -3,8 +3,6 @@
   Thank you for the great work!
 */
 
-// TODO! PPU has some issue - drawing is crossing the borders
-
 #pragma once
 
 #include <cstdint>
@@ -12,15 +10,15 @@
 #include "engine/tPixelGameEngine.h"
 
 /* PPU memory map
-$0000 - $0FFF	$1000	Pattern table 0
-$1000 - $1FFF	$1000	Pattern table 1
-$2000 - $23FF	$0400	Nametable 0
-$2400 - $27FF	$0400	Nametable 1
-$2800 - $2BFF	$0400	Nametable 2
-$2C00 - $2FFF	$0400	Nametable 3
-$3000 - $3EFF	$0F00	Mirrors of $2000 - $2EFF
-$3F00 - $3F1F	$0020	Palette RAM indexes
-$3F20 - $3FFF	$00E0	Mirrors of $3F00 - $3F1F
+$0000 - $0FFF $1000 Pattern table 0
+$1000 - $1FFF $1000 Pattern table 1
+$2000 - $23FF $0400 Nametable 0
+$2400 - $27FF $0400 Nametable 1
+$2800 - $2BFF $0400 Nametable 2
+$2C00 - $2FFF $0400 Nametable 3
+$3000 - $3EFF $0F00 Mirrors of $2000 - $2EFF
+$3F00 - $3F1F $0020 Palette RAM indexes
+$3F20 - $3FFF $00E0 Mirrors of $3F00 - $3F1F
 */
 
 class Cartridge;
@@ -135,20 +133,20 @@ private:
   loopy_register m_tram_addr; // Temporary store of information to be "transferred" into "pointer" at various times
 
   // Pixel offset horizontally
-  uint8_t m_fineX;
+  uint8_t m_fineX = 0;
 
   // Internal communications
   uint8_t m_address_latch = 0x00;
   uint8_t m_ppu_data_buffer = 0x00;
 
-  uint8_t m_addressLatch;
-  uint8_t m_dataBuffer;
+  uint8_t m_addressLatch = 0;
+  uint8_t m_dataBuffer = 0;
 
-  bool m_frameComplete;
-  bool m_nmi;
+  bool m_frameComplete = false;
+  bool m_nmi = false;
 
-  int16_t m_scanline;
-  int16_t m_cycle;
+  int16_t m_scanline = 0;
+  int16_t m_cycle = 0;
 
   // Background rendering
   uint8_t bg_next_tile_id = 0x00;
@@ -165,11 +163,9 @@ private:
   uint8_t m_tblPalette[32];
 
   tDX::Pixel m_palScreen[0x40];
-  tDX::Sprite m_sprScreen;
-  tDX::Sprite m_sprPatternTable[2];
-
-  // TODO debug
-  tDX::Sprite m_palette;
+  tDX::Sprite m_sprScreen{ 256, 240 };
+  tDX::Sprite m_sprPatternTable[2]{ {128, 128}, {128, 128} };
+  tDX::Sprite m_palette{ (8 * 4) + 7, 1 };
 
   Cartridge* m_cartridge;
 };

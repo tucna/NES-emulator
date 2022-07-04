@@ -107,13 +107,9 @@ private:
     char unused[5];
   };
 
-  static constexpr uint8_t Flag6_Mirroring  = 0b00000001;
-  static constexpr uint8_t Flag6_Trainer    = 0b00000100;
-
   Header m_header;
 
   bool m_imageValid = false;
-  bool m_debugCartridge = false;
 
   uint8_t m_mapperID = 0;
 

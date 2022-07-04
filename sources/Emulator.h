@@ -41,7 +41,7 @@ private:
   bool m_showUI = false;
   bool m_isRunning = false;
 
-  char m_defaultPageCPU[3] = "40";
+  char m_defaultPageCPU[3] = "80";
 
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable1View;
   Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_patternTable2View;

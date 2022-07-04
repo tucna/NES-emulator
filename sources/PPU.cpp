@@ -5,17 +5,7 @@
 #include "Common.h"
 #include "PPU.h"
 
-PPU::PPU() :
-  m_frameComplete(false),
-  m_cycle(0),
-  m_scanline(0),
-  m_sprScreen(256, 240),
-  m_sprPatternTable{ {128, 128}, {128, 128} },
-  m_palette((8 * 4) + 7, 1),
-  m_nmi(false),
-  m_fineX(0),
-  m_addressLatch(0),
-  m_dataBuffer(0)
+PPU::PPU()
 {
   m_palScreen[0x00] = tDX::Pixel(84, 84, 84);
   m_palScreen[0x01] = tDX::Pixel(0, 30, 116);
@@ -868,10 +858,6 @@ uint8_t PPU::ReadByPPU(uint16_t addr, bool rdonly)
   if (addr >= 0x0000 && addr <= 0x1FFF)
   {
     m_cartridge->ReadByPPU(addr, data);
-
-    // If the cartridge cant map the address, have
-    // a physical location ready here
-    //data = m_tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF];
   }
   else if (addr >= 0x2000 && addr <= 0x3EFF)
   {
