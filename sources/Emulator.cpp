@@ -42,7 +42,7 @@ Emulator::Emulator()
 
   // Create cartridge
   {
-    m_cartridge = std::make_unique<Cartridge>("roms/cpu/branch_timing_tests/2.Backward_Branch.nes");
+    m_cartridge = std::make_unique<Cartridge>("roms/cpu/nestest.nes");
 
     // Startup routine
     if (!m_cartridge->IsImageValid())
@@ -253,7 +253,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Register X"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatX.data()); ImGui::NextColumn();
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
-  /*
+
   PrepareDisassembledCode(5);
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
 
@@ -266,7 +266,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
-*/
+
   ImGui::Begin("Memory window CPU range");
   ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", m_defaultPageCPU, 3, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
@@ -338,15 +338,28 @@ void Emulator::PrepareDisassembledCode(uint8_t lines)
 {
   m_disassembledCode.clear();
 
-  auto it = m_asm.find(m_cpu->GetProgramCounter());
+  uint16_t pc = m_cpu->GetProgramCounter();
+  auto it = m_asm.find(pc);
 
-  advance(it, -lines);
+  int32_t emptyLinesStart = (*it).first - lines;
+  int32_t highOffset = 2 * lines;
+
+  if (emptyLinesStart < 0)
+  {
+    for (int i = 0; i < -emptyLinesStart; i++)
+      m_disassembledCode.push_back("- out of bounds -");
+
+    highOffset += emptyLinesStart;
+  }
+
+  int8_t offset = (*it).first - max(0, (*it).first - lines);
+  advance(it, -offset);
 
   if (it != m_asm.end())
   {
     m_disassembledCode.push_back((*it).second);
 
-    for (int i = 0; i < lines * 2; i++)
+    for (int i = 0; i < highOffset; i++)
     {
       if (++it != m_asm.end())
         m_disassembledCode.push_back((*it).second);

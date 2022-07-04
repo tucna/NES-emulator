@@ -673,7 +673,6 @@ tDX::Sprite& PPU::GetPalleteColors(uint8_t part)
   uint8_t from = part == 0 ? 0 : 4;
   uint8_t to = part == 0 ? 4 : 8;
 
-
   uint8_t currentCell = 0;
 
   for (uint8_t palette = from; palette < to; palette++)
