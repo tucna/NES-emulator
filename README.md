@@ -18,7 +18,7 @@ The project is built on [tPixelGameEngine](https://github.com/tucna/tPixelGameEn
 - PPU partially implemented (background handling).
 
 # Additional information
-PPU and CPU implementation are based on Javidx9 [NES emulation](https://github.com/OneLoneCoder/olcNES). Functionality passed [nestest.nes](https://wiki.nesdev.com/w/index.php/Emulator_tests) (official/unofficial CPU instructions) and all of the [branch_timing_tests](https://wiki.nesdev.com/w/index.php/Emulator_tests).
+PPU and CPU implementation are based on Javidx9 [NES emulation](https://github.com/OneLoneCoder/olcNES). Functionality passed [nestest.nes](https://www.nesdev.org/wiki/Emulator_tests) (official/unofficial CPU instructions) and all of the [branch_timing_tests](https://www.nesdev.org/wiki/Emulator_tests).
 
 # Screenshots
 <p align="center">  
