@@ -15,12 +15,18 @@ class Cartridge;
 class Emulator : public tDX::PixelGameEngine
 {
 public:
+  // Constructor
   Emulator();
+  // Destructor - virtual to cover smart pointers
   virtual ~Emulator();
 
+  // tDX create
   bool OnUserCreate() override;
+  // tDX update
   bool OnUserUpdate(float fElapsedTime) override;
+  // tDX end frame - used for ImGui
   bool OnUserUpdateEndFrame(float fElapsedTime) override;
+  // tDX destroy
   bool OnUserDestroy() override;
 
 private:
@@ -52,7 +58,6 @@ private:
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textureP2;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texturePaletteBcg;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texturePaletteFrg;
-
 
   // Disassembly
   std::map<uint16_t, std::string> m_asm;

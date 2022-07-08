@@ -7,7 +7,7 @@ void Bus::Write(uint16_t addr, uint8_t data)
 {
   if (addr >= 0x0000 && addr <= 0x1FFF) // Internal RAM + 4 times mirroring
   {
-    (*m_ram)[addr & 0x07FF] = data;
+    m_ram->at(addr & 0x07FF) = data;
   }
   else if (addr >= 0x2000 && addr <= 0x3FFF) // PPU registers + mirroring
   {
@@ -26,7 +26,7 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
 
   if (addr >= 0x0000 && addr <= 0x1FFF) // Internal RAM + 4 times mirroring
   {
-    data = (*m_ram)[addr & 0x07FF];
+    data = m_ram->at(addr & 0x07FF);
   }
   else if (addr >= 0x2000 && addr <= 0x3FFF) // PPU registers + mirroring
   {

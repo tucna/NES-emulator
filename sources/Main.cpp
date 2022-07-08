@@ -1,7 +1,5 @@
 #include "Emulator.h"
 
-using namespace std;
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
   Emulator emulator;

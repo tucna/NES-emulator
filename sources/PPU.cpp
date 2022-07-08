@@ -519,15 +519,14 @@ void PPU::Clock()
 
   // Now we have a final pixel colour, and a palette for this m_cycle
   // of the current m_scanline. Let's at long last, draw that ^&%*er :P
-
   m_sprScreen.SetPixel(m_cycle - 1, m_scanline, GetColourFromPaletteRam(bg_palette, bg_pixel));
 
-  // Fake some noise for now
-  //sprScreen.SetPixel(m_cycle - 1, m_scanline, palScreen[(rand() % 2) ? 0x3F : 0x30]);
+  // Fake some noise
+  //m_sprScreen.SetPixel(m_cycle - 1, m_scanline, m_palScreen[(rand() % 2) ? 0x3F : 0x30]);
 
   // Advance renderer - it never stops, it's relentless
   m_cycle++;
-  //m_frameComplete = false
+
   if (m_cycle >= 341)
   {
     m_cycle = 0;

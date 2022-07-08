@@ -87,7 +87,7 @@ bool Emulator::OnUserCreate()
   ID3D11Device* d3dDevice = GetDevice();
 
   D3D11_TEXTURE2D_DESC desc = {};
-  desc.Width = 128; // TODO - fixed values, not cool
+  desc.Width = 128;
   desc.Height = 128;
   desc.MipLevels = 1;
   desc.ArraySize = 1;
@@ -118,7 +118,7 @@ bool Emulator::OnUserCreate()
   d3dDevice->CreateTexture2D(&desc, &subResource, &m_textureP2);
   d3dDevice->CreateShaderResourceView(m_textureP2.Get(), &srvDesc, &m_patternTable2View);
 
-  // Palette
+  // Palettes
   desc = {};
   desc.Width = 4 * 4 + 3;
   desc.Height = 1;
@@ -130,6 +130,7 @@ bool Emulator::OnUserCreate()
   desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
   desc.CPUAccessFlags = 0;
 
+  // Background palette
   subResource = {};
   subResource.pSysMem = m_ppu->GetPalleteColors(0).GetData();
   subResource.SysMemPitch = desc.Width * 4;
@@ -143,7 +144,7 @@ bool Emulator::OnUserCreate()
   srvDesc.Texture2D.MostDetailedMip = 0;
   d3dDevice->CreateShaderResourceView(m_texturePaletteBcg.Get(), &srvDesc, &m_paletteBcgView);
 
-  // Frg
+  // Foreground palette
   subResource = {};
   subResource.pSysMem = m_ppu->GetPalleteColors(1).GetData();
   subResource.SysMemPitch = desc.Width * 4;
@@ -205,9 +206,9 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   if (!m_showUI)
     return true;
 
-  const ImVec4 m_redColor(1.0f, 0.0f, 0.0f, 1.0f);
-  const ImVec4 m_greenColor(0.0f, 1.0f, 0.0f, 1.0f);
-  const ImVec4 m_darkGrayColor(0.6f, 0.6f, 0.6f, 1.0f);
+  static const ImVec4 m_redColor(1.0f, 0.0f, 0.0f, 1.0f);
+  static const ImVec4 m_greenColor(0.0f, 1.0f, 0.0f, 1.0f);
+  static const ImVec4 m_darkGrayColor(0.6f, 0.6f, 0.6f, 1.0f);
 
   auto print = [&](bool flag)
   {
@@ -231,19 +232,21 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::NewFrame();
 
   string formatAcc = hex(m_cpu->GetAcc(), 2) + " [" + std::to_string(m_cpu->GetAcc()) + "]";
-  string formatX = hex(m_cpu->GetRegX(), 2) + " [" + std::to_string(m_cpu->GetRegX()) + "]";
-  string formatY = hex(m_cpu->GetRegY(), 2) + " [" + std::to_string(m_cpu->GetRegY()) + "]";
+  string formatX = hex(m_cpu->GetXRegister(), 2) + " [" + std::to_string(m_cpu->GetXRegister()) + "]";
+  string formatY = hex(m_cpu->GetYRegister(), 2) + " [" + std::to_string(m_cpu->GetYRegister()) + "]";
+
+  uint8_t status = m_cpu->GetStatusRegister();
 
   ImGui::Begin("CPU information");
   ImGui::Text("Bits");
-  ImGui::Text("0 : Carry bit"); ImGui::SameLine(); print(m_cpu->GetB0());
-  ImGui::Text("1 : Zero"); ImGui::SameLine(); print(m_cpu->GetB1());
-  ImGui::Text("2 : Disable Interrupts"); ImGui::SameLine(); print(m_cpu->GetB2());
-  ImGui::Text("3 : Decimal Mode"); ImGui::SameLine(); print(m_cpu->GetB3());
-  ImGui::Text("4 : Break"); ImGui::SameLine(); print(m_cpu->GetB4());
+  ImGui::Text("0 : Carry bit"); ImGui::SameLine(); print(status & CPU::Flags::C);
+  ImGui::Text("1 : Zero"); ImGui::SameLine(); print(status & CPU::Flags::Z);
+  ImGui::Text("2 : Disable Interrupts"); ImGui::SameLine(); print(status & CPU::Flags::I);
+  ImGui::Text("3 : Decimal Mode"); ImGui::SameLine(); print(status & CPU::Flags::D);
+  ImGui::Text("4 : Break"); ImGui::SameLine(); print(status & CPU::Flags::B);
   ImGui::Text("5 : UNUSED");
-  ImGui::Text("6 : Overflow"); ImGui::SameLine(); print(m_cpu->GetB6());
-  ImGui::Text("7 : Negative"); ImGui::SameLine(); print(m_cpu->GetB7());
+  ImGui::Text("6 : Overflow"); ImGui::SameLine(); print(status & CPU::Flags::V);
+  ImGui::Text("7 : Negative"); ImGui::SameLine(); print(status & CPU::Flags::N);
   ImGui::Separator();
   ImGui::Columns(2);
   ImGui::SetColumnWidth(0, 120);
@@ -300,23 +303,24 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   }
   ImGui::End();
 
-  tDX::Sprite& sprite1 = m_ppu->GetPatternTable(0, 0);
+  tDX::Sprite& sprite1 = m_ppu->GetPatternTable(0, 0); // background tiles
   GetContext()->UpdateSubresource(m_textureP1.Get(), 0, NULL, sprite1.GetData(), sprite1.width * 4, 0);
 
-  tDX::Sprite& sprite2 = m_ppu->GetPatternTable(1, 0);
+  tDX::Sprite& sprite2 = m_ppu->GetPatternTable(1, 0); // foreground tiles (sprites)
   GetContext()->UpdateSubresource(m_textureP2.Get(), 0, NULL, sprite2.GetData(), sprite2.width * 4, 0);
 
-  tDX::Sprite& sprite3 = m_ppu->GetPalleteColors(0); // background
+  tDX::Sprite& sprite3 = m_ppu->GetPalleteColors(0); // background palette
   GetContext()->UpdateSubresource(m_texturePaletteBcg.Get(), 0, NULL, sprite3.GetData(), sprite3.width * 4, 0);
 
-  tDX::Sprite& sprite4 = m_ppu->GetPalleteColors(1); // foreground
+  tDX::Sprite& sprite4 = m_ppu->GetPalleteColors(1); // foreground palette
   GetContext()->UpdateSubresource(m_texturePaletteFrg.Get(), 0, NULL, sprite4.GetData(), sprite4.width * 4, 0);
 
   ImGui::Begin("Pattern table");
   ImGui::Columns(2);
   ImGui::SetColumnWidth(0, 148);
-  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(133, 133)); ImGui::NextColumn(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(133, 133)); ImGui::NextColumn();// original size is 128x128
-  ImGui::Image((void*)m_paletteBcgView.Get(), ImVec2(7 * ((4 * 4) + 3) /*8 cells + 7 spaces*/, 7)); ImGui::NextColumn(); ImGui::Image((void*)m_paletteFrgView.Get(), ImVec2(7 * ((4 * 4) + 3) /*8 cells + 7 spaces*/, 7));
+  // Pattern tables are rendered slightly bigger (133, 133) instead of (128, 128) to visually fit the palettes
+  ImGui::Image((void*)m_patternTable1View.Get(), ImVec2(133, 133)); ImGui::NextColumn(); ImGui::Image((void*)m_patternTable2View.Get(), ImVec2(133, 133)); ImGui::NextColumn();
+  ImGui::Image((void*)m_paletteBcgView.Get(), ImVec2(7 * ((4 * 4) + 3), 7)); ImGui::NextColumn(); ImGui::Image((void*)m_paletteFrgView.Get(), ImVec2(7 * ((4 * 4) + 3), 7));
   ImGui::End();
 
   ImGui::Render();
@@ -327,6 +331,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
 
 bool Emulator::OnUserDestroy()
 {
+  // Cleanup ImGui
   ImGui_ImplDX11_Shutdown();
   ImGui_ImplWin32_Shutdown();
   ImGui::DestroyContext();
