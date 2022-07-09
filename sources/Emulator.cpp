@@ -48,15 +48,15 @@ Emulator::Emulator()
     if (!m_cartridge->IsImageValid())
     {
       // TODO
+      __debugbreak();
     }
 
     m_bus->ConnectCartridge(m_cartridge.get());
     m_ppu->ConnectCartridge(m_cartridge.get());
 
-    // Reset
-    // TODO - more massive reset should happen?
-    m_cpu->Reset();
-    m_ppu->Reset();
+    // PowerUp
+    m_cpu->PowerUp();
+    m_ppu->Reset(); // TODO is ppu reset the same as power up?
   }
   /*
   {
@@ -70,7 +70,8 @@ Emulator::Emulator()
   }
   */
   // Extract dissassembly
-  m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+  // TODO this needs some love
+  //m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
 }
 
 Emulator::~Emulator()
@@ -180,6 +181,9 @@ bool Emulator::OnUserUpdate(float fElapsedTime)
   if (GetKey(tDX::Key::F1).bPressed) m_showUI = !m_showUI;
   if (GetKey(tDX::Key::SPACE).bPressed) m_isRunning = !m_isRunning;
 
+  // Handle device buttons
+  if (GetKey(tDX::Key::R).bPressed) Reset();
+
   // Handle hardware
   if (m_isRunning)
   {
@@ -187,7 +191,7 @@ bool Emulator::OnUserUpdate(float fElapsedTime)
   }
   else
   {
-    if (GetKey(tDX::Key::C).bPressed)
+    if (GetKey(tDX::Key::I).bPressed)
       m_oscillator->TicksForCurrentInstruction();
 
     if (GetKey(tDX::Key::F).bPressed)
@@ -257,6 +261,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   ImGui::Text("Register Y"); ImGui::NextColumn(); ImGui::TextColored(m_darkGrayColor, formatY.data()); ImGui::NextColumn();
   ImGui::End();
 
+  /* TODO this needs to be done with respect to the places reachable by PC
   PrepareDisassembledCode(5);
   auto middleDis = m_disassembledCode.begin() + m_disassembledCode.size() / 2;
 
@@ -269,6 +274,7 @@ bool Emulator::OnUserUpdateEndFrame(float fElapsedTime)
   for (auto it = middleDis; it < m_disassembledCode.end(); it++)
     ImGui::TextColored(m_darkGrayColor, (*it).data());
   ImGui::End();
+  */
 
   ImGui::Begin("Memory window CPU range");
   ImGui::Text("Page: $"); ImGui::SameLine(); ImGui::InputText("", m_defaultPageCPU, 3, ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
@@ -370,4 +376,11 @@ void Emulator::PrepareDisassembledCode(uint8_t lines)
         m_disassembledCode.push_back((*it).second);
     }
   }
+}
+
+void Emulator::Reset()
+{
+  m_cpu->Reset();
+  m_ppu->Reset();
+  m_oscillator->Reset();
 }

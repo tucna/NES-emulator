@@ -9,14 +9,22 @@ class PPU;
 class Oscillator
 {
 public:
+  // Constructor
   Oscillator(CPU* cpu, PPU* ppu);
+  // Destructor
   ~Oscillator();
 
+  // Input signal in a form of time step
   void Input(float timeStep);
+  // Provide enough ticks to execute instruction
   void TicksForCurrentInstruction();
+  // Provide enough ticks to draw whole frame
   void TicksForCurrentFrame();
+  // Reset
+  void Reset();
 
 private:
+  // Tick for CPU and PPU
   void Tick();
 
   CPU* m_cpu;

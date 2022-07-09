@@ -38,8 +38,9 @@ uint8_t Bus::Read(uint16_t addr, bool bReadOnly)
     data = (m_controllerState[addr & 0x0001] & 0x80) > 0;
     m_controllerState[addr & 0x0001] <<= 1;
   }
-  else if (addr >= 0x4020 && addr <= 0xFFFF) // Cartridge
+  else if (addr >= 0x8000 && addr <= 0xFFFF) // Cartridge
   {
+    // TODO Hardcoded addr for PRG-ROM for now
     m_cartridge->ReadByCPU(addr, data);
   }
 

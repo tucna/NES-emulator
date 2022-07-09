@@ -32,6 +32,8 @@ public:
 private:
   // Prepare list of dissasembled instructions centered aroud PC in a range [PC - lines, PC + lines]
   void PrepareDisassembledCode(uint8_t lines);
+  // Reset device
+  void Reset();
 
   // Hardware
   RAM2KB m_ram;

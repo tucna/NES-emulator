@@ -52,6 +52,12 @@ void Oscillator::TicksForCurrentFrame()
   m_ppu->SetFrameNotCompleted();
 }
 
+void Oscillator::Reset()
+{
+  m_residualTime = 0;
+  m_systemClockCounter = 0;
+}
+
 void Oscillator::Tick()
 {
   m_ppu->Clock();

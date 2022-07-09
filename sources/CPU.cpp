@@ -26,6 +26,38 @@ CPU::CPU()
   };
 }
 
+void CPU::PowerUp()
+{
+  // Get address to set program counter to
+  m_addrAbs = 0xFFFC;
+  uint16_t lo = Read(m_addrAbs + 0);
+  uint16_t hi = Read(m_addrAbs + 1);
+
+  // Set it
+  m_programCounter = (hi << 8) | lo;
+
+  // Set registers
+  m_a = 0;
+  m_x = 0;
+  m_y = 0;
+  m_stackPointer = 0xFD;
+  m_status = 0x34;
+
+  // Clear internal helper variables
+  m_addrRel = 0x0000;
+  m_addrAbs = 0x0000;
+  m_fetched = 0x00;
+
+  // TODO
+  /*
+  $4017 = $00(frame irq enabled)
+  $4015 = $00(all channels disabled)
+  $4000 - $400F = $00
+  $4010 - $4013 = $00[4]
+  APU
+  */
+}
+
 void CPU::Reset()
 {
   // Get address to set program counter to
@@ -36,12 +68,9 @@ void CPU::Reset()
   // Set it
   m_programCounter = (hi << 8) | lo;
 
-  // Reset internal registers
-  m_a = 0;
-  m_x = 0;
-  m_y = 0;
-  m_stackPointer = 0xFD;
-  m_status = 0x00 | U;
+  // Registers
+  m_status |= I;
+  m_stackPointer -= 0x03;
 
   // Clear internal helper variables
   m_addrRel = 0x0000;
@@ -169,6 +198,7 @@ std::map<uint16_t, std::string> CPU::Disassemble(uint16_t addrStart, uint16_t ad
 
     // Read instruction, and get its readable name
     uint8_t opcode = m_bus->Read(addr, true); addr++;
+
     sInst += m_lookup[opcode].name + " ";
 
     if (m_lookup[opcode].addrmode == &CPU::IMP)

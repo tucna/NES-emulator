@@ -56,6 +56,7 @@ Cartridge::Cartridge(const std::string& file)
       if (fileType == 0)
       {
         // TODO
+        __debugbreak();
       }
 
       // If byte 7 AND $0C = $00, and bytes 12 - 15 are all 0, then iNES
@@ -78,12 +79,17 @@ Cartridge::Cartridge(const std::string& file)
       if (fileType == 2)
       {
         // TODO
+        __debugbreak();
       }
 
       // Load appropriate mapper
       switch (m_mapperID)
       {
-        case 0: m_mapper = std::make_unique<Mapper_000>(m_header.prgRomBanks, m_header.chrRomBanks); break;
+        case 0:
+          m_mapper = std::make_unique<Mapper_000>(m_header.prgRomBanks, m_header.chrRomBanks);
+          break;
+        default:
+          __debugbreak(); // Not implemented
       }
 
       m_imageValid = true;

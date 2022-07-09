@@ -61,6 +61,7 @@ public:
   ~CPU() {}
 
   // Signals
+  void PowerUp();
   void Reset();
   void IRQ();
   void NMI();
@@ -137,11 +138,10 @@ private:
   uint8_t m_x;
   uint8_t m_y;
   uint8_t m_stackPointer;
+  uint8_t m_status = 0; // sometimes called P
 
   uint16_t m_programCounter;
 
-  // Capture internal CPU status
-  uint8_t m_status = 0;
   // Input value
   uint8_t m_fetched = 0;
   // Instruction byte
