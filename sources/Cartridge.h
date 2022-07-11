@@ -1,8 +1,3 @@
-/*
-  Addressing modes, lookup table and official instructions are taken from NES emulator of javidx9 - OneLoneCoder.com.
-  Thank you for the great work!
-*/
-
 #pragma once
 
 #include <cstdint>
@@ -16,6 +11,7 @@ class Bus;
 class Cartridge
 {
 public:
+  // Mirroring used in the game
   enum class Mirroring
   {
     Horizontal,
@@ -24,24 +20,28 @@ public:
     OneScreen_Hi,
   };
 
+  // Constructor with the path to a *.NES file
   Cartridge(const std::string& file);
+  // Destructor
   ~Cartridge() {}
 
-  bool IsImageValid() const { return m_imageValid; }
-
-  // Communication with Main Bus
-  void ReadByCPU(uint16_t addr, uint8_t &data);
+  // Read access from CPU
+  void ReadByCPU(uint16_t addr, uint8_t& data);
+  // Write access from CPU
   void WriteByCPU(uint16_t addr, uint8_t data);
 
-  // Communication with PPU Bus
-  void ReadByPPU(uint16_t addr, uint8_t &data);
+  // Read access from PPU
+  void ReadByPPU(uint16_t addr, uint8_t& data);
+  // Write access from PPU
   void WriteByPPU(uint16_t addr, uint8_t data);
 
-  void ConnectToBus(Bus* bus) { m_bus = bus; }
-
+  // Return mirroring mode
   Mirroring GetMirroring() { return m_mirroring; }
+  // Check if NES file is valid
+  bool IsImageValid() const { return m_imageValid; }
 
 private:
+  // Mapper, mirroring, battery, trainer
   union Flags6
   {
     struct
@@ -56,6 +56,7 @@ private:
     uint8_t flags;
   };
 
+  // Mapper, VS/Playchoice, NES 2.0
   union Flags7
   {
     struct
@@ -107,20 +108,26 @@ private:
     char unused[5];
   };
 
+  // Header of the NES image
   Header m_header;
 
+  // Flag if image is valid
   bool m_imageValid = false;
 
-  uint8_t m_mapperID = 0;
-
+  // Mirroring mode
   Mirroring m_mirroring = Mirroring::Horizontal;
 
+  // Program ROM
   std::vector<uint8_t> m_PRG_ROM;
+  // Character ROM
   std::vector<uint8_t> m_CHR_ROM;
+  // Character RAM (used when CHR_ROM is not present)
   std::vector<uint8_t> m_CHR_RAM;
 
-  std::unique_ptr<Mapper> m_mapper;
+  // ID of the used mapper
+  uint8_t m_mapperID = 0;
 
-  Bus* m_bus = nullptr;
+  // Mapper
+  std::unique_ptr<Mapper> m_mapper;
 };
 

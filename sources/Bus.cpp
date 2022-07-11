@@ -66,5 +66,4 @@ void Bus::ConnectPPU(PPU* ppu)
 void Bus::ConnectCartridge(Cartridge* cartridge)
 {
   m_cartridge = cartridge;
-  m_cartridge->ConnectToBus(this);
 }
