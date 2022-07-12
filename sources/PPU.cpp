@@ -96,22 +96,22 @@ void PPU::Clock()
     // tiles, 8x8 pixel blocks.
 
     // Ony if rendering is enabled
-    if (mask.render_background || mask.render_sprites)
+    if (PPUMASK.render_background || PPUMASK.render_sprites)
     {
       // A single name table is 32x30 tiles. As we increment horizontally
       // we may cross into a neighbouring nametable, or wrap around to
       // a neighbouring nametable
-      if (m_vram_addr.coarse_x == 31)
+      if (m_vramAddr.coarse_x == 31)
       {
         // Leaving nametable so wrap address round
-        m_vram_addr.coarse_x = 0;
+        m_vramAddr.coarse_x = 0;
         // Flip target nametable bit
-        m_vram_addr.nametable_x = ~m_vram_addr.nametable_x;
+        m_vramAddr.nametable_x = ~m_vramAddr.nametable_x;
       }
       else
       {
         // Staying in current nametable, so just increment
-        m_vram_addr.coarse_x++;
+        m_vramAddr.coarse_x++;
       }
     }
   };
@@ -134,12 +134,12 @@ void PPU::Clock()
     // row offset, since fine_y is a value 0 to 7, and a row is 8 pixels high
 
     // Ony if rendering is enabled
-    if (mask.render_background || mask.render_sprites)
+    if (PPUMASK.render_background || PPUMASK.render_sprites)
     {
       // If possible, just increment the fine y offset
-      if (m_vram_addr.fine_y < 7)
+      if (m_vramAddr.fine_y < 7)
       {
-        m_vram_addr.fine_y++;
+        m_vramAddr.fine_y++;
       }
       else
       {
@@ -151,27 +151,27 @@ void PPU::Clock()
         // y offset is the specific "m_scanline"
 
         // Reset fine y offset
-        m_vram_addr.fine_y = 0;
+        m_vramAddr.fine_y = 0;
 
         // Check if we need to swap vertical nametable targets
-        if (m_vram_addr.coarse_y == 29)
+        if (m_vramAddr.coarse_y == 29)
         {
           // We do, so reset coarse y offset
-          m_vram_addr.coarse_y = 0;
+          m_vramAddr.coarse_y = 0;
           // And flip the target nametable bit
-          m_vram_addr.nametable_y = ~m_vram_addr.nametable_y;
+          m_vramAddr.nametable_y = ~m_vramAddr.nametable_y;
         }
-        else if (m_vram_addr.coarse_y == 31)
+        else if (m_vramAddr.coarse_y == 31)
         {
           // In case the pointer is in the attribute memory, we
           // just wrap around the current nametable
-          m_vram_addr.coarse_y = 0;
+          m_vramAddr.coarse_y = 0;
         }
         else
         {
           // None of the above boundary/wrapping conditions apply
           // so just increment the coarse y offset
-          m_vram_addr.coarse_y++;
+          m_vramAddr.coarse_y++;
         }
       }
     }
@@ -184,10 +184,10 @@ void PPU::Clock()
   auto TransferAddressX = [&]()
   {
     // Ony if rendering is enabled
-    if (mask.render_background || mask.render_sprites)
+    if (PPUMASK.render_background || PPUMASK.render_sprites)
     {
-      m_vram_addr.nametable_x = m_tram_addr.nametable_x;
-      m_vram_addr.coarse_x = m_tram_addr.coarse_x;
+      m_vramAddr.nametable_x = m_tramAddr.nametable_x;
+      m_vramAddr.coarse_x = m_tramAddr.coarse_x;
     }
   };
 
@@ -198,11 +198,11 @@ void PPU::Clock()
   auto TransferAddressY = [&]()
   {
     // Ony if rendering is enabled
-    if (mask.render_background || mask.render_sprites)
+    if (PPUMASK.render_background || PPUMASK.render_sprites)
     {
-      m_vram_addr.fine_y = m_tram_addr.fine_y;
-      m_vram_addr.nametable_y = m_tram_addr.nametable_y;
-      m_vram_addr.coarse_y = m_tram_addr.coarse_y;
+      m_vramAddr.fine_y = m_tramAddr.fine_y;
+      m_vramAddr.nametable_y = m_tramAddr.nametable_y;
+      m_vramAddr.coarse_y = m_tramAddr.coarse_y;
     }
   };
 
@@ -219,16 +219,16 @@ void PPU::Clock()
     // the required bit is always the MSB of the shifter. However, "fine x" scrolling
     // plays a part in this too, whcih is seen later, so in fact we can choose
     // any one of the top 8 bits.
-    bg_shifter_pattern_lo = (bg_shifter_pattern_lo & 0xFF00) | bg_next_tile_lsb;
-    bg_shifter_pattern_hi = (bg_shifter_pattern_hi & 0xFF00) | bg_next_tile_msb;
+    m_shifterPatternLo = (m_shifterPatternLo & 0xFF00) | m_nextTileLsb;
+    m_shifterPatternHi = (m_shifterPatternHi & 0xFF00) | m_nextTileMsb;
 
     // Attribute bits do not change per pixel, rather they change every 8 pixels
     // but are synchronised with the pattern shifters for convenience, so here
     // we take the bottom 2 bits of the attribute word which represent which
     // palette is being used for the current 8 pixels and the next 8 pixels, and
     // "inflate" them to 8 bit words.
-    bg_shifter_attrib_lo = (bg_shifter_attrib_lo & 0xFF00) | ((bg_next_tile_attrib & 0b01) ? 0xFF : 0x00);
-    bg_shifter_attrib_hi = (bg_shifter_attrib_hi & 0xFF00) | ((bg_next_tile_attrib & 0b10) ? 0xFF : 0x00);
+    m_shifterAttribLo = (m_shifterAttribLo & 0xFF00) | ((m_nextTileAttrib & 0b01) ? 0xFF : 0x00);
+    m_shifterAttribHi = (m_shifterAttribHi & 0xFF00) | ((m_nextTileAttrib & 0b10) ? 0xFF : 0x00);
   };
 
 
@@ -239,15 +239,15 @@ void PPU::Clock()
   // with the pixels being drawn for that 8 pixel section of the m_scanline.
   auto UpdateShifters = [&]()
   {
-    if (mask.render_background)
+    if (PPUMASK.render_background)
     {
       // Shifting background tile pattern row
-      bg_shifter_pattern_lo <<= 1;
-      bg_shifter_pattern_hi <<= 1;
+      m_shifterPatternLo <<= 1;
+      m_shifterPatternHi <<= 1;
 
       // Shifting palette attributes by 1
-      bg_shifter_attrib_lo <<= 1;
-      bg_shifter_attrib_hi <<= 1;
+      m_shifterAttribLo <<= 1;
+      m_shifterAttribHi <<= 1;
     }
   };
 
@@ -264,14 +264,12 @@ void PPU::Clock()
     if (m_scanline == -1 && m_cycle == 1)
     {
       // Effectively start of new frame, so clear vertical blank flag
-      status.vertical_blank = 0;
+      PPUSTATUS.vertical_blank = 0;
     }
-
 
     if ((m_cycle >= 2 && m_cycle < 258) || (m_cycle >= 321 && m_cycle < 338))
     {
       UpdateShifters();
-
 
       // In these m_cycles we are collecting and working with visible data
       // The "shifters" have been preloaded by the end of the previous
@@ -290,7 +288,7 @@ void PPU::Clock()
         // Fetch the next background tile ID
         // "(m_vram_addr.reg & 0x0FFF)" : Mask to 12 bits that are relevant
         // "| 0x2000"                 : Offset into nametable space on PPU address bus
-        bg_next_tile_id = ReadByPPU(0x2000 | (m_vram_addr.reg & 0x0FFF));
+        m_nextTileId = ReadByPPU(0x2000 | (m_vramAddr.reg & 0x0FFF));
 
         // Explanation:
         // The bottom 12 bits of the loopy register provide an index into
@@ -357,10 +355,10 @@ void PPU::Clock()
         // All attribute memory begins at 0x03C0 within a nametable, so OR with
         // result to select target nametable, and attribute byte offset. Finally
         // OR with 0x2000 to offset into nametable address space on PPU bus.
-        bg_next_tile_attrib = ReadByPPU(0x23C0 | (m_vram_addr.nametable_y << 11)
-          | (m_vram_addr.nametable_x << 10)
-          | ((m_vram_addr.coarse_y >> 2) << 3)
-          | (m_vram_addr.coarse_x >> 2));
+        m_nextTileAttrib = ReadByPPU(0x23C0 | (m_vramAddr.nametable_y << 11)
+          | (m_vramAddr.nametable_x << 10)
+          | ((m_vramAddr.coarse_y >> 2) << 3)
+          | (m_vramAddr.coarse_x >> 2));
 
         // Right we've read the correct attribute byte for a specified address,
         // but the byte itself is broken down further into the 2x2 tile groups
@@ -382,9 +380,9 @@ void PPU::Clock()
         // Likewise if "coarse x % 4" < 2 we are in the left half else right half.
         // Ultimately we want the bottom two bits of our attribute word to be the
         // palette selected. So shift as required...
-        if (m_vram_addr.coarse_y & 0x02) bg_next_tile_attrib >>= 4;
-        if (m_vram_addr.coarse_x & 0x02) bg_next_tile_attrib >>= 2;
-        bg_next_tile_attrib &= 0x03;
+        if (m_vramAddr.coarse_y & 0x02) m_nextTileAttrib >>= 4;
+        if (m_vramAddr.coarse_x & 0x02) m_nextTileAttrib >>= 2;
+        m_nextTileAttrib &= 0x03;
         break;
 
         // Compared to the last two, the next two are the easy ones... :P
@@ -410,17 +408,17 @@ void PPU::Clock()
         //                                         vertical scroll offset
         // "+ 0"                                 : Mental clarity for plane offset
         // Note: No PPU address bus offset required as it starts at 0x0000
-        bg_next_tile_lsb = ReadByPPU((control.pattern_background << 12)
-          + ((uint16_t)bg_next_tile_id << 4)
-          + (m_vram_addr.fine_y) + 0);
+        m_nextTileLsb = ReadByPPU((PPUCTRL.pattern_background << 12)
+          + ((uint16_t)m_nextTileId << 4)
+          + (m_vramAddr.fine_y) + 0);
 
         break;
       case 6:
         // Fetch the next background tile MSB bit plane from the pattern memory
         // This is the same as above, but has a +8 offset to select the next bit plane
-        bg_next_tile_msb = ReadByPPU((control.pattern_background << 12)
-          + ((uint16_t)bg_next_tile_id << 4)
-          + (m_vram_addr.fine_y) + 8);
+        m_nextTileMsb = ReadByPPU((PPUCTRL.pattern_background << 12)
+          + ((uint16_t)m_nextTileId << 4)
+          + (m_vramAddr.fine_y) + 8);
         break;
       case 7:
         // Increment the background tile "pointer" to the next tile horizontally
@@ -446,9 +444,7 @@ void PPU::Clock()
 
     // Superfluous reads of tile id at end of m_scanline
     if (m_cycle == 338 || m_cycle == 340)
-    {
-      bg_next_tile_id = ReadByPPU(0x2000 | (m_vram_addr.reg & 0x0FFF));
-    }
+      m_nextTileId = ReadByPPU(0x2000 | (m_vramAddr.reg & 0x0FFF));
 
     if (m_scanline == -1 && m_cycle >= 280 && m_cycle < 305)
     {
@@ -470,19 +466,17 @@ void PPU::Clock()
     if (m_scanline == 241 && m_cycle == 1)
     {
       // Effectively end of frame, so set vertical blank flag
-      status.vertical_blank = 1;
+      PPUSTATUS.vertical_blank = 1;
 
       // If the control register tells us to emit a NMI when
       // entering vertical blanking period, do it! The CPU
       // will be informed that rendering is complete so it can
       // perform operations with the PPU knowing it wont
       // produce visible artefacts
-      if (control.enable_nmi)
+      if (PPUCTRL.enable_nmi)
         m_nmi = true;
     }
   }
-
-
 
   // Composition - We now have background pixel information for this m_cycle
   // At this point we are only interested in background
@@ -494,7 +488,7 @@ void PPU::Clock()
   // background rendering is disabled, the pixel and palette combine
   // to form 0x00. This will fall through the colour tables to yield
   // the current background colour in effect
-  if (mask.render_background)
+  if (PPUMASK.render_background)
   {
     // Handle Pixel Selection by selecting the relevant bit
     // depending upon fine x scolling. This has the effect of
@@ -504,15 +498,15 @@ void PPU::Clock()
 
     // Select Plane pixels by extracting from the shifter
     // at the required location.
-    uint8_t p0_pixel = (bg_shifter_pattern_lo & bit_mux) > 0;
-    uint8_t p1_pixel = (bg_shifter_pattern_hi & bit_mux) > 0;
+    uint8_t p0_pixel = (m_shifterPatternLo & bit_mux) > 0;
+    uint8_t p1_pixel = (m_shifterPatternHi & bit_mux) > 0;
 
     // Combine to form pixel index
     bg_pixel = (p1_pixel << 1) | p0_pixel;
 
     // Get palette
-    uint8_t bg_pal0 = (bg_shifter_attrib_lo & bit_mux) > 0;
-    uint8_t bg_pal1 = (bg_shifter_attrib_hi & bit_mux) > 0;
+    uint8_t bg_pal0 = (m_shifterAttribLo & bit_mux) > 0;
+    uint8_t bg_pal1 = (m_shifterAttribHi & bit_mux) > 0;
     bg_palette = (bg_pal1 << 1) | bg_pal0;
   }
 
@@ -542,23 +536,23 @@ void PPU::Clock()
 void PPU::Reset()
 {
   m_fineX = 0x00;
-  m_address_latch = 0x00;
-  m_ppu_data_buffer = 0x00;
+  m_addressLatch = 0x00;
+  m_data = 0x00;
   m_scanline = 0;
   m_cycle = 0;
-  bg_next_tile_id = 0x00;
-  bg_next_tile_attrib = 0x00;
-  bg_next_tile_lsb = 0x00;
-  bg_next_tile_msb = 0x00;
-  bg_shifter_pattern_lo = 0x0000;
-  bg_shifter_pattern_hi = 0x0000;
-  bg_shifter_attrib_lo = 0x0000;
-  bg_shifter_attrib_hi = 0x0000;
-  status.reg = 0x00;
-  mask.reg = 0x00;
-  control.reg = 0x00;
-  m_vram_addr.reg = 0x0000;
-  m_tram_addr.reg = 0x0000;
+  m_nextTileId = 0x00;
+  m_nextTileAttrib = 0x00;
+  m_nextTileLsb = 0x00;
+  m_nextTileMsb = 0x00;
+  m_shifterPatternLo = 0x0000;
+  m_shifterPatternHi = 0x0000;
+  m_shifterAttribLo = 0x0000;
+  m_shifterAttribHi = 0x0000;
+  PPUMASK.reg = 0x00;
+  PPUMASK.reg = 0x00;
+  PPUCTRL.reg = 0x00;
+  m_vramAddr.reg = 0x0000;
+  m_tramAddr.reg = 0x0000;
 }
 
 void PPU::ConnectCartridge(Cartridge * cartridge)
@@ -693,13 +687,13 @@ uint8_t PPU::ReadByCPU(uint16_t addr, bool rdonly)
     switch (addr)
     {
     case 0x0000: // Control
-      data = control.reg;
+      data = PPUCTRL.reg;
       break;
     case 0x0001: // Mask
-      data = mask.reg;
+      data = PPUMASK.reg;
       break;
     case 0x0002: // Status
-      data = status.reg;
+      data = PPUSTATUS.reg;
       break;
     case 0x0003: // OAM Address
       break;
@@ -736,13 +730,13 @@ uint8_t PPU::ReadByCPU(uint16_t addr, bool rdonly)
       // represent the last PPU bus transaction. Some games "may"
       // use this noise as valid data (even though they probably
       // shouldn't)
-      data = (status.reg & 0xE0) | (m_ppu_data_buffer & 0x1F);
+      data = (PPUSTATUS.reg & 0xE0) | (m_data & 0x1F);
 
       // Clear the vertical blanking flag
-      status.vertical_blank = 0;
+      PPUSTATUS.vertical_blank = 0;
 
       // Reset Loopy's Address latch flag
-      m_address_latch = 0;
+      m_addressLatch = 0;
       break;
 
       // OAM Address
@@ -762,18 +756,18 @@ uint8_t PPU::ReadByCPU(uint16_t addr, bool rdonly)
       // Reads from the NameTable ram get delayed one m_cycle,
       // so output buffer which contains the data from the
       // previous read request
-      data = m_ppu_data_buffer;
+      data = m_data;
       // then update the buffer for next time
-      m_ppu_data_buffer = ReadByPPU(m_vram_addr.reg);
+      m_data = ReadByPPU(m_vramAddr.reg);
       // However, if the address was in the palette range, the
       // data is not delayed, so it returns immediately
-      if (m_vram_addr.reg >= 0x3F00) data = m_ppu_data_buffer;
+      if (m_vramAddr.reg >= 0x3F00) data = m_data;
       // All reads from PPU data automatically increment the nametable
       // address depending upon the mode set in the control register.
       // If set to vertical mode, the increment is 32, so it skips
       // one whole nametable row; in horizontal mode it just increments
       // by 1, moving to the next column
-      m_vram_addr.reg += (control.increment_mode ? 32 : 1);
+      m_vramAddr.reg += (PPUCTRL.increment_mode ? 32 : 1);
       break;
     }
   }
@@ -785,12 +779,12 @@ void PPU::WriteByCPU(uint16_t addr, uint8_t data)
   switch (addr)
   {
   case 0x0000: // Control
-    control.reg = data;
-    m_tram_addr.nametable_x = control.nametable_x;
-    m_tram_addr.nametable_y = control.nametable_y;
+    PPUCTRL.reg = data;
+    m_tramAddr.nametable_x = PPUCTRL.nametable_x;
+    m_tramAddr.nametable_y = PPUCTRL.nametable_y;
     break;
   case 0x0001: // Mask
-    mask.reg = data;
+    PPUMASK.reg = data;
     break;
   case 0x0002: // Status
     break;
@@ -799,32 +793,32 @@ void PPU::WriteByCPU(uint16_t addr, uint8_t data)
   case 0x0004: // OAM Data
     break;
   case 0x0005: // Scroll
-    if (m_address_latch == 0)
+    if (m_addressLatch == 0)
     {
       // First write to scroll register contains X offset in pixel space
       // which we split into coarse and fine x values
       m_fineX = data & 0x07;
-      m_tram_addr.coarse_x = data >> 3;
-      m_address_latch = 1;
+      m_tramAddr.coarse_x = data >> 3;
+      m_addressLatch = 1;
     }
     else
     {
       // First write to scroll register contains Y offset in pixel space
       // which we split into coarse and fine Y values
-      m_tram_addr.fine_y = data & 0x07;
-      m_tram_addr.coarse_y = data >> 3;
-      m_address_latch = 0;
+      m_tramAddr.fine_y = data & 0x07;
+      m_tramAddr.coarse_y = data >> 3;
+      m_addressLatch = 0;
     }
     break;
   case 0x0006: // PPU Address
-    if (m_address_latch == 0)
+    if (m_addressLatch == 0)
     {
       // PPU address bus can be accessed by CPU via the ADDR and DATA
       // registers. The fisrt write to this register latches the high byte
       // of the address, the second is the low byte. Note the writes
       // are stored in the tram register...
-      m_tram_addr.reg = (uint16_t)((data & 0x3F) << 8) | (m_tram_addr.reg & 0x00FF);
-      m_address_latch = 1;
+      m_tramAddr.reg = (uint16_t)((data & 0x3F) << 8) | (m_tramAddr.reg & 0x00FF);
+      m_addressLatch = 1;
     }
     else
     {
@@ -832,19 +826,19 @@ void PPU::WriteByCPU(uint16_t addr, uint8_t data)
       // buffer is updated. Writing to the PPU is unwise during rendering
       // as the PPU will maintam the vram address automatically whilst
       // rendering the m_scanline position.
-      m_tram_addr.reg = (m_tram_addr.reg & 0xFF00) | data;
-      m_vram_addr = m_tram_addr;
-      m_address_latch = 0;
+      m_tramAddr.reg = (m_tramAddr.reg & 0xFF00) | data;
+      m_vramAddr = m_tramAddr;
+      m_addressLatch = 0;
     }
     break;
   case 0x0007: // PPU Data
-    WriteByPPU(m_vram_addr.reg, data);
+    WriteByPPU(m_vramAddr.reg, data);
     // All writes from PPU data automatically increment the nametable
     // address depending upon the mode set in the control register.
     // If set to vertical mode, the increment is 32, so it skips
     // one whole nametable row; in horizontal mode it just increments
     // by 1, moving to the next column
-    m_vram_addr.reg += (control.increment_mode ? 32 : 1);
+    m_vramAddr.reg += (PPUCTRL.increment_mode ? 32 : 1);
     break;
   }
 }
@@ -894,7 +888,7 @@ uint8_t PPU::ReadByPPU(uint16_t addr, bool rdonly)
     if (addr == 0x0014) addr = 0x0004;
     if (addr == 0x0018) addr = 0x0008;
     if (addr == 0x001C) addr = 0x000C;
-    data = m_tblPalette[addr] & (mask.grayscale ? 0x30 : 0x3F);
+    data = m_tblPalette[addr] & (PPUMASK.grayscale ? 0x30 : 0x3F);
   }
 
   return data;
@@ -907,11 +901,11 @@ void PPU::WriteByPPU(uint16_t addr, uint8_t data)
   if (addr >= 0x0000 && addr <= 0x1FFF)
   {
     m_cartridge->WriteByPPU(addr, data);
-    //m_tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF] = data;
   }
   else if (addr >= 0x2000 && addr <= 0x3EFF)
   {
     addr &= 0x0FFF;
+
     if (m_cartridge->GetMirroring() == Cartridge::Mirroring::Vertical)
     {
       // Vertical

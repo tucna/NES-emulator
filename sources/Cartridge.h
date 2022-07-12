@@ -25,14 +25,14 @@ public:
   // Destructor
   ~Cartridge() {}
 
-  // Read access from CPU
+  // Read access from CPU (CPU bus)
   void ReadByCPU(uint16_t addr, uint8_t& data);
-  // Write access from CPU
+  // Write access from CPU (CPU bus)
   void WriteByCPU(uint16_t addr, uint8_t data);
 
-  // Read access from PPU
+  // Read access from PPU (PPU bus)
   void ReadByPPU(uint16_t addr, uint8_t& data);
-  // Write access from PPU
+  // Write access from PPU (PPU bus)
   void WriteByPPU(uint16_t addr, uint8_t data);
 
   // Return mirroring mode
