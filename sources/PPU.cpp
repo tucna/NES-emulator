@@ -206,7 +206,6 @@ void PPU::Clock()
     }
   };
 
-
   // ==============================================================================
   // Prime the "in-effect" background tile shifters ready for outputting next
   // 8 pixels in m_scanline.
@@ -251,7 +250,7 @@ void PPU::Clock()
     }
   };
 
-  // All but 1 of the secanlines is visible to the user. The pre-render m_scanline
+  // All but 1 of the scanlines is visible to the user. The pre-render m_scanline
   // at -1, is used to configure the "shifters" for the first visible m_scanline, 0.
   if (m_scanline >= -1 && m_scanline < 240)
   {
@@ -281,151 +280,151 @@ void PPU::Clock()
       // repeatable sequence of events, every 2 clock m_cycles.
       switch ((m_cycle - 1) % 8)
       {
-      case 0:
-        // Load the current background tile pattern and attributes into the "shifter"
-        LoadBackgroundShifters();
+        case 0:
+          // Load the current background tile pattern and attributes into the "shifter"
+          LoadBackgroundShifters();
 
-        // Fetch the next background tile ID
-        // "(m_vram_addr.reg & 0x0FFF)" : Mask to 12 bits that are relevant
-        // "| 0x2000"                 : Offset into nametable space on PPU address bus
-        m_nextTileId = ReadByPPU(0x2000 | (m_vramAddr.reg & 0x0FFF));
+          // Fetch the next background tile ID
+          // "(m_vram_addr.reg & 0x0FFF)" : Mask to 12 bits that are relevant
+          // "| 0x2000"                 : Offset into nametable space on PPU address bus
+          m_nextTileId = ReadByPPU(0x2000 | (m_vramAddr.reg & 0x0FFF));
 
-        // Explanation:
-        // The bottom 12 bits of the loopy register provide an index into
-        // the 4 nametables, regardless of nametable mirroring configuration.
-        // nametable_y(1) nametable_x(1) coarse_y(5) coarse_x(5)
-        //
-        // Consider a single nametable is a 32x32 array, and we have four of them
-        //   0                1
-        // 0 +----------------+----------------+
-        //   |                |                |
-        //   |                |                |
-        //   |    (32x32)     |    (32x32)     |
-        //   |                |                |
-        //   |                |                |
-        // 1 +----------------+----------------+
-        //   |                |                |
-        //   |                |                |
-        //   |    (32x32)     |    (32x32)     |
-        //   |                |                |
-        //   |                |                |
-        //   +----------------+----------------+
-        //
-        // This means there are 4096 potential locations in this array, which
-        // just so happens to be 2^12!
-        break;
-      case 2:
-        // Fetch the next background tile attribute. OK, so this one is a bit
-        // more involved :P
+          // Explanation:
+          // The bottom 12 bits of the loopy register provide an index into
+          // the 4 nametables, regardless of nametable mirroring configuration.
+          // nametable_y(1) nametable_x(1) coarse_y(5) coarse_x(5)
+          //
+          // Consider a single nametable is a 32x32 array, and we have four of them
+          //   0                1
+          // 0 +----------------+----------------+
+          //   |                |                |
+          //   |                |                |
+          //   |    (32x32)     |    (32x32)     |
+          //   |                |                |
+          //   |                |                |
+          // 1 +----------------+----------------+
+          //   |                |                |
+          //   |                |                |
+          //   |    (32x32)     |    (32x32)     |
+          //   |                |                |
+          //   |                |                |
+          //   +----------------+----------------+
+          //
+          // This means there are 4096 potential locations in this array, which
+          // just so happens to be 2^12!
+          break;
+        case 2:
+          // Fetch the next background tile attribute. OK, so this one is a bit
+          // more involved :P
 
-        // Recall that each nametable has two rows of cells that are not tile
-        // information, instead they represent the attribute information that
-        // indicates which palettes are applied to which area on the screen.
-        // Importantly (and frustratingly) there is not a 1 to 1 correspondance
-        // between background tile and palette. Two rows of tile data holds
-        // 64 attributes. Therfore we can assume that the attributes affect
-        // 8x8 zones on the screen for that nametable. Given a working resolution
-        // of 256x240, we can further assume that each zone is 32x32 pixels
-        // in screen space, or 4x4 tiles. Four system palettes are allocated
-        // to background rendering, so a palette can be specified using just
-        // 2 bits. The attribute byte therefore can specify 4 distinct palettes.
-        // Therefore we can even further assume that a single palette is
-        // applied to a 2x2 tile combination of the 4x4 tile zone. The very fact
-        // that background tiles "share" a palette locally is the reason why
-        // in some games you see distortion in the colours at screen edges.
+          // Recall that each nametable has two rows of cells that are not tile
+          // information, instead they represent the attribute information that
+          // indicates which palettes are applied to which area on the screen.
+          // Importantly (and frustratingly) there is not a 1 to 1 correspondance
+          // between background tile and palette. Two rows of tile data holds
+          // 64 attributes. Therfore we can assume that the attributes affect
+          // 8x8 zones on the screen for that nametable. Given a working resolution
+          // of 256x240, we can further assume that each zone is 32x32 pixels
+          // in screen space, or 4x4 tiles. Four system palettes are allocated
+          // to background rendering, so a palette can be specified using just
+          // 2 bits. The attribute byte therefore can specify 4 distinct palettes.
+          // Therefore we can even further assume that a single palette is
+          // applied to a 2x2 tile combination of the 4x4 tile zone. The very fact
+          // that background tiles "share" a palette locally is the reason why
+          // in some games you see distortion in the colours at screen edges.
 
-        // As before when choosing the tile ID, we can use the bottom 12 bits of
-        // the loopy register, but we need to make the implementation "coarser"
-        // because instead of a specific tile, we want the attribute byte for a
-        // group of 4x4 tiles, or in other words, we divide our 32x32 address
-        // by 4 to give us an equivalent 8x8 address, and we offset this address
-        // into the attribute section of the target nametable.
+          // As before when choosing the tile ID, we can use the bottom 12 bits of
+          // the loopy register, but we need to make the implementation "coarser"
+          // because instead of a specific tile, we want the attribute byte for a
+          // group of 4x4 tiles, or in other words, we divide our 32x32 address
+          // by 4 to give us an equivalent 8x8 address, and we offset this address
+          // into the attribute section of the target nametable.
 
-        // Reconstruct the 12 bit loopy address into an offset into the
-        // attribute memory
+          // Reconstruct the 12 bit loopy address into an offset into the
+          // attribute memory
 
-        // "(m_vram_addr.coarse_x >> 2)"        : integer divide coarse x by 4,
-        //                                      from 5 bits to 3 bits
-        // "((m_vram_addr.coarse_y >> 2) << 3)" : integer divide coarse y by 4,
-        //                                      from 5 bits to 3 bits,
-        //                                      shift to make room for coarse x
+          // "(m_vram_addr.coarse_x >> 2)"        : integer divide coarse x by 4,
+          //                                      from 5 bits to 3 bits
+          // "((m_vram_addr.coarse_y >> 2) << 3)" : integer divide coarse y by 4,
+          //                                      from 5 bits to 3 bits,
+          //                                      shift to make room for coarse x
 
-        // Result so far: YX00 00yy yxxx
+          // Result so far: YX00 00yy yxxx
 
-        // All attribute memory begins at 0x03C0 within a nametable, so OR with
-        // result to select target nametable, and attribute byte offset. Finally
-        // OR with 0x2000 to offset into nametable address space on PPU bus.
-        m_nextTileAttrib = ReadByPPU(0x23C0 | (m_vramAddr.nametable_y << 11)
-          | (m_vramAddr.nametable_x << 10)
-          | ((m_vramAddr.coarse_y >> 2) << 3)
-          | (m_vramAddr.coarse_x >> 2));
+          // All attribute memory begins at 0x03C0 within a nametable, so OR with
+          // result to select target nametable, and attribute byte offset. Finally
+          // OR with 0x2000 to offset into nametable address space on PPU bus.
+          m_nextTileAttrib = ReadByPPU(0x23C0 | (m_vramAddr.nametable_y << 11)
+            | (m_vramAddr.nametable_x << 10)
+            | ((m_vramAddr.coarse_y >> 2) << 3)
+            | (m_vramAddr.coarse_x >> 2));
 
-        // Right we've read the correct attribute byte for a specified address,
-        // but the byte itself is broken down further into the 2x2 tile groups
-        // in the 4x4 attribute zone.
+          // Right we've read the correct attribute byte for a specified address,
+          // but the byte itself is broken down further into the 2x2 tile groups
+          // in the 4x4 attribute zone.
 
-        // The attribute byte is assembled thus: BR(76) BL(54) TR(32) TL(10)
-        //
-        // +----+----+			    +----+----+
-        // | TL | TR |			    | ID | ID |
-        // +----+----+ where TL =   +----+----+
-        // | BL | BR |			    | ID | ID |
-        // +----+----+			    +----+----+
-        //
-        // Since we know we can access a tile directly from the 12 bit address, we
-        // can analyse the bottom bits of the coarse coordinates to provide us with
-        // the correct offset into the 8-bit word, to yield the 2 bits we are
-        // actually interested in which specifies the palette for the 2x2 group of
-        // tiles. We know if "coarse y % 4" < 2 we are in the top half else bottom half.
-        // Likewise if "coarse x % 4" < 2 we are in the left half else right half.
-        // Ultimately we want the bottom two bits of our attribute word to be the
-        // palette selected. So shift as required...
-        if (m_vramAddr.coarse_y & 0x02) m_nextTileAttrib >>= 4;
-        if (m_vramAddr.coarse_x & 0x02) m_nextTileAttrib >>= 2;
-        m_nextTileAttrib &= 0x03;
-        break;
+          // The attribute byte is assembled thus: BR(76) BL(54) TR(32) TL(10)
+          //
+          // +----+----+			    +----+----+
+          // | TL | TR |			    | ID | ID |
+          // +----+----+ where TL =   +----+----+
+          // | BL | BR |			    | ID | ID |
+          // +----+----+			    +----+----+
+          //
+          // Since we know we can access a tile directly from the 12 bit address, we
+          // can analyse the bottom bits of the coarse coordinates to provide us with
+          // the correct offset into the 8-bit word, to yield the 2 bits we are
+          // actually interested in which specifies the palette for the 2x2 group of
+          // tiles. We know if "coarse y % 4" < 2 we are in the top half else bottom half.
+          // Likewise if "coarse x % 4" < 2 we are in the left half else right half.
+          // Ultimately we want the bottom two bits of our attribute word to be the
+          // palette selected. So shift as required...
+          if (m_vramAddr.coarse_y & 0x02) m_nextTileAttrib >>= 4;
+          if (m_vramAddr.coarse_x & 0x02) m_nextTileAttrib >>= 2;
+          m_nextTileAttrib &= 0x03;
+          break;
 
-        // Compared to the last two, the next two are the easy ones... :P
+          // Compared to the last two, the next two are the easy ones... :P
 
-      case 4:
-        // Fetch the next background tile LSB bit plane from the pattern memory
-        // The Tile ID has been read from the nametable. We will use this id to
-        // index into the pattern memory to find the correct sprite (assuming
-        // the sprites lie on 8x8 pixel boundaries in that memory, which they do
-        // even though 8x16 sprites exist, as background tiles are always 8x8).
-        //
-        // Since the sprites are effectively 1 bit deep, but 8 pixels wide, we
-        // can represent a whole sprite row as a single byte, so offsetting
-        // into the pattern memory is easy. In total there is 8KB so we need a
-        // 13 bit address.
+        case 4:
+          // Fetch the next background tile LSB bit plane from the pattern memory
+          // The Tile ID has been read from the nametable. We will use this id to
+          // index into the pattern memory to find the correct sprite (assuming
+          // the sprites lie on 8x8 pixel boundaries in that memory, which they do
+          // even though 8x16 sprites exist, as background tiles are always 8x8).
+          //
+          // Since the sprites are effectively 1 bit deep, but 8 pixels wide, we
+          // can represent a whole sprite row as a single byte, so offsetting
+          // into the pattern memory is easy. In total there is 8KB so we need a
+          // 13 bit address.
 
-        // "(control.pattern_background << 12)"  : the pattern memory selector
-        //                                         from control register, either 0K
-        //                                         or 4K offset
-        // "((uint16_t)bg_next_tile_id << 4)"    : the tile id multiplied by 16, as
-        //                                         2 lots of 8 rows of 8 bit pixels
-        // "(m_vram_addr.fine_y)"                  : Offset into which row based on
-        //                                         vertical scroll offset
-        // "+ 0"                                 : Mental clarity for plane offset
-        // Note: No PPU address bus offset required as it starts at 0x0000
-        m_nextTileLsb = ReadByPPU((PPUCTRL.pattern_background << 12)
-          + ((uint16_t)m_nextTileId << 4)
-          + (m_vramAddr.fine_y) + 0);
+          // "(control.pattern_background << 12)"  : the pattern memory selector
+          //                                         from control register, either 0K
+          //                                         or 4K offset
+          // "((uint16_t)bg_next_tile_id << 4)"    : the tile id multiplied by 16, as
+          //                                         2 lots of 8 rows of 8 bit pixels
+          // "(m_vram_addr.fine_y)"                  : Offset into which row based on
+          //                                         vertical scroll offset
+          // "+ 0"                                 : Mental clarity for plane offset
+          // Note: No PPU address bus offset required as it starts at 0x0000
+          m_nextTileLsb = ReadByPPU((PPUCTRL.pattern_background << 12)
+            + ((uint16_t)m_nextTileId << 4)
+            + (m_vramAddr.fine_y) + 0);
 
-        break;
-      case 6:
-        // Fetch the next background tile MSB bit plane from the pattern memory
-        // This is the same as above, but has a +8 offset to select the next bit plane
-        m_nextTileMsb = ReadByPPU((PPUCTRL.pattern_background << 12)
-          + ((uint16_t)m_nextTileId << 4)
-          + (m_vramAddr.fine_y) + 8);
-        break;
-      case 7:
-        // Increment the background tile "pointer" to the next tile horizontally
-        // in the nametable memory. Note this may cross nametable boundaries which
-        // is a little complex, but essential to implement scrolling
-        IncrementScrollX();
-        break;
+          break;
+        case 6:
+          // Fetch the next background tile MSB bit plane from the pattern memory
+          // This is the same as above, but has a +8 offset to select the next bit plane
+          m_nextTileMsb = ReadByPPU((PPUCTRL.pattern_background << 12)
+            + ((uint16_t)m_nextTileId << 4)
+            + (m_vramAddr.fine_y) + 8);
+          break;
+        case 7:
+          // Increment the background tile "pointer" to the next tile horizontally
+          // in the nametable memory. Note this may cross nametable boundaries which
+          // is a little complex, but essential to implement scrolling
+          IncrementScrollX();
+          break;
       }
     }
 
@@ -446,11 +445,9 @@ void PPU::Clock()
     if (m_cycle == 338 || m_cycle == 340)
       m_nextTileId = ReadByPPU(0x2000 | (m_vramAddr.reg & 0x0FFF));
 
+    // End of vertical blank period so reset the Y address ready for rendering
     if (m_scanline == -1 && m_cycle >= 280 && m_cycle < 305)
-    {
-      // End of vertical blank period so reset the Y address ready for rendering
       TransferAddressY();
-    }
   }
 
   if (m_scanline == 240)
@@ -460,9 +457,6 @@ void PPU::Clock()
 
   if (m_scanline >= 241 && m_scanline < 261)
   {
-    //std::string TUCNA("TUCNA " + std::to_string(m_scanline) + "\n");
-    //OutputDebugString(TUCNA.c_str());
-
     if (m_scanline == 241 && m_cycle == 1)
     {
       // Effectively end of frame, so set vertical blank flag
@@ -540,17 +534,21 @@ void PPU::Reset()
   m_data = 0x00;
   m_scanline = 0;
   m_cycle = 0;
+
   m_nextTileId = 0x00;
   m_nextTileAttrib = 0x00;
   m_nextTileLsb = 0x00;
   m_nextTileMsb = 0x00;
+
   m_shifterPatternLo = 0x0000;
   m_shifterPatternHi = 0x0000;
   m_shifterAttribLo = 0x0000;
   m_shifterAttribHi = 0x0000;
+
   PPUMASK.reg = 0x00;
   PPUMASK.reg = 0x00;
   PPUCTRL.reg = 0x00;
+
   m_vramAddr.reg = 0x0000;
   m_tramAddr.reg = 0x0000;
 }

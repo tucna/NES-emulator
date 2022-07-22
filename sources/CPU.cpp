@@ -34,7 +34,7 @@ void CPU::PowerUp()
   uint16_t hi = Read(m_addrAbs + 1);
 
   // Set it
-  m_programCounter = (hi << 8) | lo;
+  m_resetVectorPC = (hi << 8) | lo;
 
   // Set registers
   m_a = 0;
@@ -42,6 +42,7 @@ void CPU::PowerUp()
   m_y = 0;
   m_stackPointer = 0xFD;
   m_status = 0x34;
+  m_programCounter = m_resetVectorPC;
 
   // Clear internal helper variables
   m_addrRel = 0x0000;
@@ -60,17 +61,10 @@ void CPU::PowerUp()
 
 void CPU::Reset()
 {
-  // Get address to set program counter to
-  m_addrAbs = 0xFFFC;
-  uint16_t lo = Read(m_addrAbs + 0);
-  uint16_t hi = Read(m_addrAbs + 1);
-
-  // Set it
-  m_programCounter = (hi << 8) | lo;
-
   // Registers
   m_status |= I;
   m_stackPointer -= 0x03;
+  m_programCounter = m_resetVectorPC;
 
   // Clear internal helper variables
   m_addrRel = 0x0000;
@@ -170,13 +164,13 @@ void CPU::NMI()
   m_cycles = 8;
 }
 
-std::map<uint16_t, std::string> CPU::Disassemble(uint16_t addrStart, uint16_t addrStop)
+std::map<uint16_t, std::string> CPU::Disassemble()
 {
   uint8_t value = 0x00;
   uint8_t lo = 0x00;
   uint8_t hi = 0x00;
   uint16_t lineAddr = 0;
-  uint32_t addr = addrStart;
+  uint32_t addr = m_resetVectorPC;
 
   std::map<uint16_t, std::string> mapLines;
 
@@ -189,7 +183,7 @@ std::map<uint16_t, std::string> CPU::Disassemble(uint16_t addrStart, uint16_t ad
     return s;
   };
 
-  while (addr <= (uint32_t)addrStop)
+  while (addr <= 0xFFFF)
   {
     lineAddr = addr;
 

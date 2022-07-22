@@ -1,3 +1,8 @@
+/*
+  Based on NES emulator of javidx9 - OneLoneCoder.com.
+  Thank you for the great work!
+*/
+
 #pragma once
 
 #include <cstdint>
@@ -182,7 +187,6 @@ private:
   uint16_t m_shifterAttribHi = 0x0000;
 
   uint8_t m_tblName[2][1024]; // 32 x 32 tiles (30 x 32 for tiles, 2 x 32 for atributes
-  uint8_t m_tblPattern[2][4096];
   uint8_t m_tblPalette[32]; // 8 palettes per 4 colors
 
   // Debug

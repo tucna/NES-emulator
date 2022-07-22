@@ -28,7 +28,7 @@ $C000 - $FFFF $4000 PRG-ROM
 
 class Bus;
 
-// NES uses 6502
+// NES uses 2A03 CPU/APU based on 6502
 class CPU
 {
 public:
@@ -73,7 +73,7 @@ public:
   void ConnectToBus(Bus* bus) { m_bus = bus; }
 
   // Methods to make debugging easier
-  std::map<uint16_t, std::string> Disassemble(uint16_t addrStart, uint16_t addrStop);
+  std::map<uint16_t, std::string> Disassemble();
 
   bool IsInstructionCompleted() const { return m_cycles == 0; }
 
@@ -134,14 +134,16 @@ private:
   void SetFlag(Flags flag, bool setClear);
 
   // Registers
-  uint8_t m_a;
-  uint8_t m_x;
-  uint8_t m_y;
-  uint8_t m_stackPointer;
+  uint8_t m_a = 0;
+  uint8_t m_x = 0;
+  uint8_t m_y = 0;
+  uint8_t m_stackPointer = 0;
   uint8_t m_status = 0; // sometimes called P
 
-  uint16_t m_programCounter;
+  uint16_t m_programCounter = 0;
 
+  // Default program counter from reset vector
+  uint16_t m_resetVectorPC = 0;
   // Input value
   uint8_t m_fetched = 0;
   // Instruction byte

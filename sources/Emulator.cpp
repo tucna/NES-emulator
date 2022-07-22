@@ -71,7 +71,7 @@ Emulator::Emulator()
   */
   // Extract dissassembly
   // TODO this needs some love
-  //m_asm = m_cpu->Disassemble(0x0000, 0xFFFF);
+  //m_asm = m_cpu->Disassemble();
 }
 
 Emulator::~Emulator()
@@ -352,7 +352,7 @@ void Emulator::PrepareDisassembledCode(uint8_t lines)
   uint16_t pc = m_cpu->GetProgramCounter();
   auto it = m_asm.find(pc);
 
-  int32_t emptyLinesStart = (*it).first - lines;
+  int32_t emptyLinesStart = ((*it).first - m_asm.begin()->first) - lines;
   int32_t highOffset = 2 * lines;
 
   if (emptyLinesStart < 0)
